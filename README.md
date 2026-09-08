@@ -39,9 +39,9 @@ Autonomous Mobile Robot (AMV2).
 | `/imu_df_node` | `amv_connect` | กรอง/ประมวลผล IMU (Dead Reckoning) |
 | `/robot_pose_ekf` | `robot_pose_ekf` | ฟิวชัน Odometry + IMU เป็น `/tf` ของหุ่น |
 | `/ekf_odom_bridge` | `amv_connect` | ปรับรูป `/robot_pose_ekf/odom_combined` → `/odom` ให้ move_base |
-| `/map_server` | `map_server` | โหลดแผนที่ `office_test_v1` |
+| `/map_server` | `map_server` | โหลดแผนที่ `office_test_v3` |
 | `/amcl` | `amcl` | Monte Carlo Localization — ประมาณตำแหน่งบนแผนที่ |
-| `/move_base` | `move_base` | Global (Navfn) + Local (DWA) Planner, costmap 2 ชั้น |
+| `/move_base` | `move_base` | Global (PlannedPathPlanner) + Local (DWA) Planner, costmap 2 ชั้น |
 | `/amv_base` | `amv_connect` | สื่อสารบอร์ดควบคุม (`/dev/amv_controller`), publish `/odom_amv` |
 | `/amv_current_pose`, `/amv_model`, `/amv_pose_tf` | `amv_connect` | ประมวลผล/แปลงตำแหน่งสำหรับ UI และ TF |
 | `/twist_mux`, `/twist_marker`, `/joy_to_twist` | `twist_mux` | ตัวสลับคำสั่งความเร็ว (Auto / Joy) + แสดงภาพ cmd_vel |
@@ -49,6 +49,23 @@ Autonomous Mobile Robot (AMV2).
 | `/station_plotting` | `amv_service` | จุด plot เส้นทาง/ภารกิจบนแผนที่ |
 | `/rosbridge_server` | `rosbridge_server` | WebSocket ให้ Web App ควบคุมผ่าน `/amv_pose_str` ฯลฯ |
 | `/rviz_*` | `rviz` | Viewer (ไม่กระทบการทำงาน) |
+
+### 2.1 move_base และส่วนประกอบ (Planner / Costmap / Topics)
+
+| ส่วน | ทำหน้าที่ | Topic |
+|---|---|---|
+| `/move_base` (node) | รับเป้าหมายผ่าน action server + state machine (PLANNING → CONTROLLING → CLEARING); ส่งคำสั่งความเร็วผ่าน remap `cmd_vel` → `/nav_vel` | `/move_base/status`, `/move_base/current_goal`, `/move_base/goal` |
+| `base_global_planner` = `amv_navigation/PlannedPathPlanner` | Global planner ตัวหลัก: เกาะเส้น `/planned_path` ที่วางจาก `path_planner_node` (amv_virtual_track, Dijkstra routing) แล้วคืน plan ให้ move_base | รับ `/planned_path` — พิมพ์ `/move_base/PlannedPathPlanner/plan` (เส้นสีเขียวใน RViz) |
+| fallback `navfn_fallback` | NavfnROS ที่ฝังอยู่ภายใน planner — ใช้เมื่อยังไม่มี `/planned_path` หรือ start/goal อยู่นอกเส้นเกิน `planned_path_max_match_dist` (1.0 m) | `/move_base/navfn_fallback/plan` |
+| `base_local_planner` = `dwa_local_planner/DWAPlannerROS` | Local planner: DWA สุ่มวิถีความเร็ว (vx/vth) เลือกคำสั่งที่ดีที่สุด; พิมพ์ plan ที่ prune แล้ว + local plan + วิถีตัวอย่าง | `/move_base/DWAPlannerROS/global_plan`, `/move_base/DWAPlannerROS/local_plan`, `/move_base/DWAPlannerROS/trajectory_cloud` |
+| `/move_base/global_costmap` | Costmap ระดับโลก: static map + inflation + `costmap_prohibition_layer` | `/move_base/global_costmap/costmap` |
+| `/move_base/local_costmap` | Costmap ระดับท้องถิ่น: static + observation (LiDAR) + inflation | `/move_base/local_costmap/costmap` |
+| รับเป้าหมาย | จาก Web App / `station_service` ผ่าน topic | `/move_base_simple/goal` |
+| Recovery behavior | ปิดใช้งาน: `recovery_behavior_enabled=false`, `clearing_rotation_allowed=false` | `/move_base/recovery_status` |
+
+**หมายเหตุ:**
+- `/move_base/NavfnROS/plan` ไม่มีแล้ว — เดิม global planner เป็น `navfn/NavfnROS` ตรงๆ ตอนนี้ใช้ `amv_navigation/PlannedPathPlanner` (`move_base.launch` บรรทัด 12)
+- เส้นแผนที่ใน RViz (`navigation.rviz`) แสดงจาก `/move_base/PlannedPathPlanner/plan` (สีเขียว = global plan) และ `/move_base/DWAPlannerROS/local_plan` (สีแดง = local plan)
 
 ### 3. Core Packages
 * `amv_connect`: บอร์ดสื่อสารฮาร์ดแวร์, WebSocket bridge และสถานะไฟ/เสียง
