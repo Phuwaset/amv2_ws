@@ -24,8 +24,8 @@ class RegulatedWaypointController:
         # -------------------------------------------------------------
         # 1. Parameters (Regulated Pure Pursuit)
         # -------------------------------------------------------------
-        self.csv_path = rospy.get_param('~csv_path', os.path.expanduser('~/amv_ws/src/amv_virtual_track/config/station_list.csv'))
-        self.waypoint_csv = rospy.get_param('~waypoint_csv', os.path.expanduser('~/amv_ws/src/amv_virtual_track/config/waypoint_follower_list.csv'))
+        self.csv_path = rospy.get_param('~csv_path', os.path.expanduser('~/amv_ws/src/amv_service/station/station_list_office.csv'))
+        self.waypoint_csv = rospy.get_param('~waypoint_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/waypoint_follower_list.csv'))
         self.frame_id = rospy.get_param('~frame_id', 'map')
         self.base_frame = rospy.get_param('~base_frame', 'base_footprint')
 

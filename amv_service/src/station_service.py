@@ -129,6 +129,7 @@ class StationService():
                     goal.target_pose.pose.orientation.y = self.station_list[i].qy
                     goal.target_pose.pose.orientation.z = self.station_list[i].qz
                     goal.target_pose.pose.orientation.w = self.station_list[i].qw
+                    self.goto_station_pub.publish(self.station_list[i].name)
                     self.client.send_goal(goal)
 
                     print ('------------------------------------------------------------------------------')
@@ -189,6 +190,7 @@ class StationService():
                     goal.target_pose.pose.orientation.y = self.station_list[i].qy
                     goal.target_pose.pose.orientation.z = self.station_list[i].qz
                     goal.target_pose.pose.orientation.w = self.station_list[i].qw
+                    self.goto_station_pub.publish(self.station_list[i].name)
                     self.client.send_goal(goal)
 
                     print ('------------------------------------------------------------------------------')
@@ -516,6 +518,7 @@ class StationService():
 
         self.reset_pose_pub = rospy.Publisher('initialpose', PoseWithCovarianceStamped, queue_size=1)
         self.amv_navigation_pub = rospy.Publisher('amv_navigation_status', NavigationStatus, queue_size=1)
+        self.goto_station_pub = rospy.Publisher('/amv/command/goto_station', String, queue_size=1)
         self.pin_command_pub = rospy.Publisher('pin_command', String, queue_size=1)
         self.led_command_pub = rospy.Publisher('led_command', LedCommandStamped, queue_size=1)
         self.moveback_pub = rospy.Publisher("nav_vel", Twist, queue_size=1)

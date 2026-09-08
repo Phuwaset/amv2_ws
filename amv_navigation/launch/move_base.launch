@@ -4,11 +4,13 @@
   <arg name="cmd_vel_topic" default="/nav_vel" />
   <arg name="odom_topic" default="odom" />
   <arg name="move_forward_only" default="true"/>
+  <arg name="record_mode" default="false" />
 
   <!-- move_base -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     
-    <param name="base_global_planner" value="navfn/NavfnROS"/>
+    <param name="base_global_planner" value="amv_navigation/PlannedPathPlanner"/>
+    <!--<param name="base_global_planner" value="navfn/NavfnROS"/>-->
     <!--<param name="base_global_planner" value="carrot_planner/CarrotPlanner"/>-->
     <!--<param name="base_global_planner" value="SBPLLatticePlanner"/>-->
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
@@ -24,10 +26,13 @@
     <rosparam file="$(find amv_navigation)/param/move_base_params.yaml" command="load" />
     <rosparam file="$(find amv_navigation)/param/dwa_local_planner_params.yaml" command="load" />
 
-    <rosparam file="$(find amv_navigation)/config/prohibition_areas.yaml" command="load" ns="global_costmap/costmap_prohibition_layer" />
+    <rosparam file="$(find amv_navigation)/config/prohibition_areas_office.yaml" command="load" ns="global_costmap/costmap_prohibition_layer" />
+
+    <rosparam file="$(find amv_navigation)/param/amv_tuning.yaml" command="load" />
 
     <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
     <remap from="odom" to="$(arg odom_topic)"/>
+    <remap if="$(arg record_mode)" from="move_base_simple/goal" to="recording_dummy" />
     <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
     <param name="recovery_behavior_enabled" value="false"/>
     <param name="clearing_rotation_allowed" value="false"/>

@@ -58,3 +58,14 @@ Autonomous Mobile Robot (AMV2).
 * `ydlidar_ros-master` & `ira_laser_tools`: ไดรเวอร์และการรวมสัญญาณ LiDAR หน้า-หลัง
 
 > **หมายเหตุ:** กราฟนี้เป็นสถานะที่รันจริงผ่าน `amv-start.service` (เปิดเฉพาะ `amv_navigation.launch`); `amv_qr_detection` ถูกคอมเมนต์ไว้ใน launch และ `amv_mapping` ใช้เฉพาะตอนทำแผนที่เท่านั้น
+
+
+Service	ทำอะไร
+/amv/recorder/undo_station	ลบสถานีล่าสุด + เขียน CSV + วาด marker ใหม่
+/amv/recorder/clear_station	ล้างสถานีทั้งหมด
+/amv/recorder/save_station	บันทึก CSV
+
+
+rosservice call /amv/recorder/undo     # ลบ waypoint ล่าสุด + save CSV + วาด marker ใหม่
+rosservice call /amv/recorder/clear    # ล้างทั้งหมด
+rosservice call /amv/recorder/save     # save (บันทึกอัตโนมัติอยู่แล้ว)

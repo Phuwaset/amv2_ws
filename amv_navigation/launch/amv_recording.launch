@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- โหมดบันทึก (Recording Mode): move_base ไม่รับ 2D Nav Goal (remap -> recording_dummy)
+       ใช้แทน amv-start.service ตอนปัก waypoint/สถานี:
+       sudo systemctl stop amv-start
+       roslaunch amv_navigation amv_recording.launch
+       (แล้วรัน recorder แยกใน terminal) -->
+  <param name="/use_sim_time" value="false" />
+
+  <include file="$(find amv_connect)/launch/amv_base_connect.launch" />
+
+  <include file="$(find amv_navigation)/launch/navigation.launch">
+    <arg name="record_mode" value="true"/>
+  </include>
+
+  <include file="$(find amv_service)/launch/amv_control_service.launch" />
+
+  <include file="$(find amv_connect)/launch/rosbridge_websocket.launch"/>
+</launch>
