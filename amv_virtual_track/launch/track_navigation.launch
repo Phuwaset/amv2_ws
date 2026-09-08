@@ -2,7 +2,7 @@
   <!-- =================================================================== -->
   <!-- 0. Parameters & Arguments                                           -->
   <!-- =================================================================== -->
-  <arg name="map_file" default="$(find amv_navigation)/map/office_test_v2.yaml"/>
+  <arg name="map_file" default="$(find amv_mapping)/map/map_office_202608/office_test_v2.yaml"/>
   <arg name="open_rviz" default="false"/>
 
   <!-- =================================================================== -->

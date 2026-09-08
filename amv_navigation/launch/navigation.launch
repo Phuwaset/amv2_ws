@@ -2,7 +2,7 @@
 <launch> 
   <!-- Run map server -->
   <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_mapping)/map/mektec_20240521.yaml"/> -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_navigation)/map/office_test_v1.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_mapping)/map/map_office_202608/office_test_v2.yaml"/>
 
   <!--- Run amcl -->
   <include file="$(find amv_navigation)/launch/amcl.launch" />  

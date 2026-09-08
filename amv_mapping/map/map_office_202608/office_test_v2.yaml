@@ -1,4 +1,4 @@
-image: /home/minirw/amv_ws/src/amv_navigation/map/office_test_v2.pgm
+image: office_test_v2.pgm
 resolution: 0.050000
 origin: [-30.000000, -30.000000, 0.000000]
 negate: 0
