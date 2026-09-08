@@ -14,20 +14,5 @@
 
     <param name="unsafe_tolerance" type="int" value="3" /> 
   </node >
-
-  <!--<node name="laser_safety_zone2" pkg="amv_connect" type='laser_safety' respawn="true">
-
-    <param name="reference_frame" type="string" value="laser_front" /> 
-    <param name="scan_topic" type="string" value="/laser_front" /> 
-    <param name="zone_topic" type="string" value="/zone2" /> 
-
-    <param name="x_max" type="double" value="0.5" /> 
-    <param name="x_min" type="double" value="0.0" /> 
-    <param name="y_max" type="double" value="0.35" /> 
-    <param name="y_min" type="double" value="-0.35" /> 
-
-    <param name="unsafe_tolerance" type="int" value="3" /> 
-  </node >-->
-
 </launch>
 
