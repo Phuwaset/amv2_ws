@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="amv_navigation" type="waypoints_plotting.py" name="waypoints_plotting" output="screen">
+    <param name="csv_path" value="/home/minirw/amv_ws/src/amv_navigation/waypoints/waypoints_list.csv" />
+  </node>  
+  <node pkg="amv_navigation" type="waypoints_tracking.py" name="waypoints_tracking" output="screen"/>
+
+</launch>

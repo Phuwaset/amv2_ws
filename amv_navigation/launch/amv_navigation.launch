@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch> 
+  <!-- AMV Base Connect -->
+  <include file="$(find amv_connect)/launch/amv_base_connect.launch" />
+
+  <!--- Navigation -->
+  <include file="$(find amv_navigation)/launch/navigation.launch" />
+
+  <!--- AMV Control Service -->
+  <include file="$(find amv_service)/launch/amv_control_service.launch" />
+
+  <!--- QR Landmark -->
+  <!--<include file="$(find amv_qr_detection)/launch/qr_landmark.launch" />-->
+
+  <!--- Publishing to Web App -->
+  <include file="$(find amv_connect)/launch/rosbridge_websocket.launch"/>
+
+</launch>

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+ <node pkg="amv_connect" type="imu_df_connect.py" name="imu_df_node"/>
+
+</launch>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch> 
+  <!-- Run map server -->
+  <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_mapping)/map/mektec_20240521.yaml"/> -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_navigation)/map/office_test_v1.yaml"/>
+
+  <!--- Run amcl -->
+  <include file="$(find amv_navigation)/launch/amcl.launch" />  
+  
+  <!--- Run move base -->
+  <include file="$(find amv_navigation)/launch/move_base.launch" />
+
+</launch>

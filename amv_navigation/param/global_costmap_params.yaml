@@ -1,0 +1,20 @@
+global_costmap:
+  global_frame: map
+  robot_base_frame: base_footprint
+
+  update_frequency: 1.0
+  publish_frequency: 1.0
+  transform_tolerance: 0.5
+
+  static_map: true
+
+  inflation_radius: 0.3     #0.3
+  cost_scaling_factor: 5.0
+
+  plugins:
+    - {name: static_layer, type: "costmap_2d::StaticLayer"}    
+    - {name: costmap_prohibition_layer, type: "costmap_prohibition_layer_namespace::CostmapProhibitionLayer"}
+    #- {name: laser_obstacle_layer, type: "costmap_2d::VoxelLayer"}
+    #- {name: stvl_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+ 

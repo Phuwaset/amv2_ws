@@ -1,0 +1,5 @@
+bool read_action
+---
+string status
+int32 station_total
+StationData[] station_data

@@ -1,0 +1,19 @@
+float32 linear_velocity
+float32 angular_velocity
+int32 battery_level
+int32 ultrasonic
+int32 system_fault_code
+int32 motor_fault_code
+
+bool robot_ready
+bool robot_moving
+bool stop_conf
+bool auto_mode
+bool linear_down_conf
+bool linear_up_conf
+bool green_button
+bool red_button
+bool system_fault
+bool emergency_button
+bool charging
+bool initial_status

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="amv_service" type="station_service.py" name="station_service" output="screen">  
+    <param name="station_path" value="/home/minirw/amv_ws/src/amv_service/station/station_list.csv" />
+  </node>  
+
+</launch>

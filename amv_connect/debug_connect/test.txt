@@ -1,0 +1,79 @@
+minirw@amv2:~$ rfkill list
+0: hci0: Bluetooth
+	Soft blocked: no
+	Hard blocked: no
+1: phy0: Wireless LAN
+	Soft blocked: no
+	Hard blocked: no
+minirw@amv2:~$ lspci -nnk | grep -A3 -iE 'network|wireless'
+00:14.3 Network controller [0280]: Intel Corporation Device [8086:a0f0] (rev 20)
+	DeviceName: Onboard - Ethernet
+	Subsystem: Intel Corporation Device [8086:0074]
+	Kernel driver in use: iwlwifi
+minirw@amv2:~$ dmesg | grep -iE 'iwlwifi|firmware'
+[    6.357583] iwlwifi 0000:00:14.3: enabling device (0000 -> 0002)
+[    6.372590] i915 0000:00:02.0: [drm] Finished loading DMC firmware i915/tgl_dmc_ver2_12.bin (v2.12)
+[    6.394124] iwlwifi 0000:00:14.3: api flags index 2 larger than supported by driver
+[    6.394159] iwlwifi 0000:00:14.3: TLV_FW_FSEQ_VERSION: FSEQ Version: 89.3.35.37
+[    6.394383] iwlwifi 0000:00:14.3: loaded firmware version 66.f1c864e0.0 QuZ-a0-hr-b0-66.ucode op_mode iwlmvm
+[    6.457791] iwlwifi 0000:00:14.3: Detected Intel(R) Wi-Fi 6 AX201 160MHz, REV=0x354
+[    6.580817] iwlwifi 0000:00:14.3: Detected RF HR B5, rfid=0x10a100
+[    6.645477] iwlwifi 0000:00:14.3: base HW address: 80:38:fb:5d:5f:34
+[    6.666880] Bluetooth: hci0: Minimum firmware build 1 week 10 2014
+[    6.668322] Bluetooth: hci0: Found device firmware: intel/ibt-19-0-4.sfi
+[    6.703762] iwlwifi 0000:00:14.3 wlo1: renamed from wlan0
+[    8.250013] Bluetooth: hci0: Waiting for firmware download to complete
+[    8.250497] Bluetooth: hci0: Firmware loaded in 1545090 usecs
+[    8.271524] Bluetooth: hci0: Firmware revision 0.0 build 121 week 36 2020
+minirw@amv2:~$ nmcli device status
+DEVICE   TYPE      STATE        CONNECTION         
+eth0     ethernet  connected    Wired connection 3 
+enp89s0  ethernet  unavailable  --                 
+lo       loopback  unmanaged    --                 
+wlo1     wifi      unmanaged    --                 
+minirw@amv2:~$ nmcli radio wifi
+enabled
+minirw@amv2:~$ sudo systemctl restart NetworkManager
+[sudo] password for minirw: 
+minirw@amv2:~$ nmcli device status
+DEVICE   TYPE      STATE        CONNECTION         
+eth0     ethernet  connected    Wired connection 3 
+enp89s0  ethernet  unavailable  --                 
+lo       loopback  unmanaged    --                 
+wlo1     wifi      unmanaged    --                 
+minirw@amv2:~$ sudo nmcli device set wlo1 managed yes
+minirw@amv2:~$ sudo systemctl restart NetworkManager
+minirw@amv2:~$ nmcli device status
+DEVICE   TYPE      STATE        CONNECTION         
+eth0     ethernet  connected    Wired connection 3 
+enp89s0  ethernet  unavailable  --                 
+lo       loopback  unmanaged    --                 
+wlo1     wifi      unmanaged    --                 
+minirw@amv2:~$ cat /etc/NetworkManager/NetworkManager.conf
+[main]
+plugins=ifupdown,keyfile
+
+[ifupdown]
+managed=false
+
+[device]
+wifi.scan-rand-mac-address=no
+minirw@amv2:~$ grep -R "managed\|renderer" /etc/NetworkManager /etc/netplan 2>/dev/null
+/etc/NetworkManager/NetworkManager.conf:managed=false
+/etc/netplan/01-network-manager-all.yaml:  renderer: NetworkManager
+minirw@amv2:~$ sudo nano /etc/NetworkManager/NetworkManager.conf
+minirw@amv2:~$ sudo systemctl restart NetworkManager
+minirw@amv2:~$ nmcli device status
+DEVICE        TYPE      STATE         CONNECTION         
+eth0          ethernet  connected     Wired connection 3 
+wlo1          wifi      disconnected  --                 
+p2p-dev-wlo1  wifi-p2p  disconnected  --                 
+enp89s0       ethernet  unavailable   --                 
+lo            loopback  unmanaged     --                 
+minirw@amv2:~$ nmcli device status
+DEVICE        TYPE      STATE         CONNECTION  
+wlo1          wifi      connected     MINIRW_WIFI 
+eth0          ethernet  disconnected  --          
+p2p-dev-wlo1  wifi-p2p  disconnected  --          
+enp89s0       ethernet  unavailable   --          
+lo            loopback  unmanaged     -- 

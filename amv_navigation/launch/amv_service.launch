@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch> 
+  <!--- Waypoints Tracking -->
+  <include file="$(find amv_navigation)/launch/waypoints_tracking.launch" />
+
+  <!--- Waypoints service -->
+  <include file="$(find amv_navigation)/launch/waypoints_service.launch" />
+
+  <!--- Reset AMV Position -->
+  <include file="$(find amv_navigation)/launch/reset_amv_pose.launch" />
+
+</launch>

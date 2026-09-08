@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="hokuyo_laser" pkg="urg_node" type="urg_node" respawn="true" output="screen">
+        <param name="serial_port" type="string" value="/dev/hokuyo_front"/>
+        <param name="serial_baud" type="int" value="115200"/>
+        <param name="frame_id" type="string" value="laser_front"/>
+        <param name="intensity" type="bool" value="true"/>
+        <param name="angle_min" type="double" value="-1.57"/>
+        <param name="angle_max" type="double" value="1.57"/>
+
+        <remap from="scan" to="laser_front" />
+
+    </node>
+
+</launch>

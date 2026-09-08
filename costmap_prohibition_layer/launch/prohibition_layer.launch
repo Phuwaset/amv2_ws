@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="costmap_prohibition_layer" pkg="costmap_prohibition_layer" type='costmap_prohibition_layer' respawn="true" output="screen"/>
+
+</launch>
+

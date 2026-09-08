@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="amv_connect" type="waypoint_plotter.py" name="waypoint_plotter"/>
+  <node pkg="amv_connect" type="waypoint_teacher.py" name="waypoint_teacher"/>
+    
+</launch>

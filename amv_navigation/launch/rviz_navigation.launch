@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node ns="rviz" pkg="rviz" type="rviz" name="move_base_rviz" args="-d $(find amv_navigation)/rviz/navigation.rviz" output="screen">
+    <!--<remap from="/initialpose" to="/navigation/initial_pose"/>-->
+  </node>
+</launch>

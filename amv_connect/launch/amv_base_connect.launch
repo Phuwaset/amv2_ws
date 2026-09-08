@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Force real-robot mode: never wait for a /clock topic from a simulator -->
+  <param name="/use_sim_time" value="false" />
+
+  <node pkg="amv_connect" type="amv_base_node_28082026.py" name="amv_base" output="screen" respawn="true">
+    <!--<param name="port" value="/dev/arduino_mega" />-->
+    <param name="port" value="/dev/amv_controller" />
+    <param name="baud" value="57600" />
+  </node>
+  <include file="$(find amv_connect)/launch/imu_df_connect.launch"/>
+  <!--<include file="$(find amv_connect)/launch/camera_connect.launch"/>-->
+  <!-- <include file="$(find amv_connect)/launch/hokuyo_connect.launch"/> -->
+  
+  <include file="$(find ydlidar_ros)/launch/lidar_front.launch"/>
+  <include file="$(find ydlidar_ros)/launch/lidar_back.launch"/>
+  <include file="$(find ira_laser_tools)/launch/laserscan_multi_merger.launch"/>
+  
+  <include file="$(find amv_connect)/launch/laser_safety.launch"/>
+
+  <include file="$(find amv_connect)/launch/robot_pose_ekf.launch"/>
+
+  <include file="$(find amv_connect)/launch/twist_mux.launch"/>
+  <include file="$(find amv_connect)/launch/amv_tele_joy.launch"/>
+
+  <include file="$(find amv_connect)/launch/amv_urdf.launch"/>
+  
+  <include file="$(find amv_connect)/launch/amv_pose_publish.launch"/>
+  
+</launch>
+
+

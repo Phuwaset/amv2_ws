@@ -1,0 +1,9 @@
+/CMakeLists.txt
+__pycache__/
+*.pyc
+*.pyo
+.vscode/
+*.swp
+
+*~
+.DS_Store

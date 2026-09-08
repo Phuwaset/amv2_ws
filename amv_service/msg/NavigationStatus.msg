@@ -1,0 +1,8 @@
+string current_station
+string reset_station
+string going_station
+string send_station
+string receive_station
+string navigation_status
+string pin_lock
+string obstacle
