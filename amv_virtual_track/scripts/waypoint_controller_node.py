@@ -84,7 +84,12 @@ class RegulatedWaypointController:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-        self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        #self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+
+        #Topic subscriber tmux nav_vel
+        cmd_topic = rospy.get_param('~cmd_vel_topic', '/nav_vel')
+        self.cmd_pub = rospy.Publisher(cmd_topic, Twist, queue_size=1)
+        
         self.cte_pub = rospy.Publisher('/amv/diagnostics/cross_track_error', Float32, queue_size=1)
         self.status_pub = rospy.Publisher('/amv/diagnostics/status', String, queue_size=1)
         self.local_plan_pub = rospy.Publisher('/amv/local_plan', Path, queue_size=1)
