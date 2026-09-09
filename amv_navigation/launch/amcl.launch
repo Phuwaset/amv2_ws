@@ -8,8 +8,8 @@
   <arg name="scan_topic"      default="scan"/>
   <arg name="map_topic"       default="/map"/>         <!-- if use_map_topic = true  -->
   <arg name="map_service"     default="/static_map"/>  <!-- if use_map_topic = false -->
-  <arg name="initial_pose_x"  default="5.2"/>
-  <arg name="initial_pose_y"  default="-31.35"/>
+  <arg name="initial_pose_x"  default="-3.1"/> <!-- ให้แก้ไข เมื่อได้จุด home ใหม่ -->
+  <arg name="initial_pose_y"  default="-0.5"/> <!-- ให้แก้ไข เมื่อได้จุด home ใหม่ -->
   <arg name="initial_pose_a"  default="0.0"/>
   <arg name="odom_frame_id"   default="$(arg tf_prefix)/odom"/>
   <arg name="base_frame_id"   default="$(arg tf_prefix)/base_footprint"/>

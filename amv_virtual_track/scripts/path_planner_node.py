@@ -15,8 +15,8 @@ class BranchingPathPlanner:
         rospy.init_node('path_planner_node', anonymous=False)
 
         # โหลดพารามิเตอร์ไฟล์
-        self.station_csv = rospy.get_param('~station_csv', os.path.expanduser('~/amv_ws/src/amv_virtual_track/config/station_list.csv'))
-        self.waypoint_csv = rospy.get_param('~waypoint_csv', os.path.expanduser('~/amv_ws/src/amv_virtual_track/config/waypoint_follower_list.csv'))
+        self.station_csv = rospy.get_param('~station_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/station_list_office.csv'))
+        self.waypoint_csv = rospy.get_param('~waypoint_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/waypoint_follower_list.csv'))
         self.frame_id = rospy.get_param('~frame_id', 'map')
         self.step_size = rospy.get_param('~step_size', 0.05)
         self.max_connect_dist = rospy.get_param('~max_connect_dist', 1.8) # ระยะเชื่อมโยงโหนดทางแยก

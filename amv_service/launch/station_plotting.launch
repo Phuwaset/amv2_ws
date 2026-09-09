@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node pkg="amv_service" type="station_plotting.py" name="station_plotting" output="screen">  
-    <param name="station_path" value="/home/minirw/amv_ws/src/amv_service/station/station_list.csv" />
+  <node pkg="amv_service" type="station_plotting_test.py" name="station_plotting_test" output="screen">  
+    <param name="station_path" value="/home/minirw/amv_ws/src/amv_service/station/station_list_office.csv" />
+    <param name="frame_id" value="map" />
   </node>  
 
 </launch>
