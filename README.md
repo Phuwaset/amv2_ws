@@ -9,7 +9,7 @@
 ระบบทำงานบน **ROS 1 Noetic**[cite: 1, 6] รองรับการประมวลผลแบบ Distributed Node ทั้งการควบคุมอัตโนมัติ การคัดกรองสิทธิ์ความปลอดภัย และการเชื่อมต่อ Web HMI[cite: 1, 3]
 
 <p align="center">
-  <img src="amv_navigation/rosgraph_amv2.png" alt="AMV2 ROS Computation Graph" width="100%">
+  <img src="amv_connect/debug_connect/rosgraph.png" alt="AMV2 ROS Computation Graph" width="100%">
 </p>
 
 > **วิธีอ่านกราฟ:** วงรี = ROS Node (Process), สี่เหลี่ยม = Topic (ช่องทางการส่งข้อมูล), กล่องกลุ่ม `move_base` = Namespace ย่อยของโหนดนำทาง, `/tf` = ทรีการแปลงพิกัดที่ถูก Group รวมเป็นโหนดเดียว[cite: 1]
