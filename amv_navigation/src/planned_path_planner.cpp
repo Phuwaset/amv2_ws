@@ -34,9 +34,12 @@ public:
 
       path_sub_ = nh.subscribe("/planned_path", 1, &PlannedPathPlanner::pathCallback, this);
 
+      ros::NodeHandle ph("~/" + name);
+      plan_pub_ = ph.advertise<nav_msgs::Path>("plan", 1);
+
       navfn_.initialize("navfn_fallback", costmap_ros_);
       initialized_ = true;
-      ROS_INFO("PlannedPathPlanner initialized (follows /planned_path, fallback NavfnROS).");
+      ROS_INFO("PlannedPathPlanner initialized (follows /planned_path, fallback NavfnROS, publishes ~/%s/plan).", name.c_str());
     }
   }
 
@@ -47,7 +50,9 @@ public:
     if (!have_path_ || latest_path_.poses.empty())
     {
       ROS_WARN_THROTTLE(2.0, "PlannedPathPlanner: no /planned_path yet -> fallback NavfnROS.");
-      return navfn_.makePlan(start, goal, plan);
+      bool ok = navfn_.makePlan(start, goal, plan);
+      publishPlan(plan);
+      return ok;
     }
 
     int start_idx = findNearestIndex(start);
@@ -56,7 +61,9 @@ public:
     if (start_idx < 0 || goal_idx < 0)
     {
       ROS_WARN_THROTTLE(2.0, "PlannedPathPlanner: start/goal not on /planned_path (match > %.2f m) -> fallback NavfnROS.", max_match_dist_);
-      return navfn_.makePlan(start, goal, plan);
+      bool ok = navfn_.makePlan(start, goal, plan);
+      publishPlan(plan);
+      return ok;
     }
 
     plan.clear();
@@ -74,11 +81,25 @@ public:
     plan.front() = start;
     plan.back() = goal;
 
+    publishPlan(plan);
+
     ROS_INFO("PlannedPathPlanner: returning %lu poses from /planned_path (start_idx=%d goal_idx=%d).", plan.size(), start_idx, goal_idx);
     return true;
   }
 
 private:
+  void publishPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
+  {
+    if (plan_pub_.getNumSubscribers() == 0)
+      return;
+    nav_msgs::Path gui_path;
+    gui_path.header.stamp = ros::Time::now();
+    if (!plan.empty())
+      gui_path.header.frame_id = plan[0].header.frame_id;
+    gui_path.poses = plan;
+    plan_pub_.publish(gui_path);
+  }
+
   void pathCallback(const nav_msgs::Path& msg)
   {
     latest_path_ = msg;
@@ -110,6 +131,7 @@ private:
   double max_match_dist_;
   navfn::NavfnROS navfn_;
   ros::Subscriber path_sub_;
+  ros::Publisher plan_pub_;
 };
 
 }  // namespace amv_navigation
