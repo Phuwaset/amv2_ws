@@ -321,7 +321,8 @@ class StationService():
         if self.red_button == True:
             self.led_color = 'orange'
             self.led_flashing = 'fast'
-            self.buzzer = 'sound4'
+            # self.buzzer = 'sound4'
+            self.buzzer = 'none' 
 
         else:
             i = len(data.status_list)
@@ -336,20 +337,23 @@ class StationService():
                         self.led_color = 'green'
 
                     self.led_flashing = 'middle'
-                    self.buzzer = 'sound1'
+                    # self.buzzer = 'sound1' >> แก้ไขกลับด้วยถ้าไปหน้างานแล้ว ทุกตัว
+                    self.buzzer = 'none' 
 
                 elif movebase_status == 2:
                     self.navigation_status = 'Recovery path planning'
                     self.led_color = 'green'
                     self.led_flashing = 'fast'
-                    self.buzzer = 'sound4'
+                    # self.buzzer = 'sound4'
+                    self.buzzer = 'none' 
 
                 elif movebase_status == 3:
                     self.navigation_status = 'Arrived station'
                     self.going_station = 'Stop at station'
                     self.led_color = 'blue'
                     self.led_flashing = 'middle'
-                    self.buzzer = 'none'
+                    # defult 
+                    self.buzzer = 'none' 
 
                     #Send pin lock command with arrived goal
                     if self.pin_counter_check < 15:
@@ -387,7 +391,8 @@ class StationService():
                     self.navigation_status = 'Error path planning'
                     self.led_color = 'red'
                     self.led_flashing = 'middle'
-                    self.buzzer = 'sound4'
+                    # self.buzzer = 'sound4'
+                    self.buzzer = 'none' 
             else:
                 self.navigation_status = 'None'
                 if self.obstacle == 'Detecting':
@@ -447,7 +452,8 @@ class StationService():
             twist.angular.z = 0
             self.led_color = 'green'
             self.led_flashing = 'fast'
-            self.buzzer = 'sound1'
+            # self.buzzer = 'sound1'
+            self.buzzer = 'none' 
             self.backward_complete = False            
             print(dist)
             print('amv is moving back from station')
@@ -466,7 +472,8 @@ class StationService():
             twist.angular.z = 0
             self.led_color = 'green'
             self.led_flashing = 'fast'
-            self.buzzer = 'sound1'
+            # self.buzzer = 'sound1' #Defult
+            self.buzzer = 'none' 
             self.forward_complete = False            
             print(dist)
             print('amv is moving forward from station')

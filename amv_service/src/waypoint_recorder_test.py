@@ -31,9 +31,9 @@ class WaypointRecorderTest():
         self.marker_pub = rospy.Publisher('/waypoint_markers', MarkerArray, queue_size=1, latch=True)
         self.goal_sub = rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
 
-        self.srv_undo = rospy.Service('/amv/recorder/undo', Trigger, self.srv_undo_cb)
-        self.srv_clear = rospy.Service('/amv/recorder/clear', Trigger, self.srv_clear_cb)
-        self.srv_save = rospy.Service('/amv/recorder/save', Trigger, self.srv_save_cb)
+        self.srv_undo = rospy.Service('/amv/recorder/undo_waypoint', Trigger, self.srv_undo_cb)
+        self.srv_clear = rospy.Service('/amv/recorder/clear_waypoint', Trigger, self.srv_clear_cb)
+        self.srv_save = rospy.Service('/amv/recorder/save_waypoint', Trigger, self.srv_save_cb)
 
         self.publish_markers()
         rospy.loginfo('[WaypointRecorderTest] Online frame [%s]. Click "2D Nav Goal" on RViz to record waypoint.', self.frame_id)
@@ -134,6 +134,7 @@ class WaypointRecorderTest():
             sphere.pose.position.x = wp['x']
             sphere.pose.position.y = wp['y']
             sphere.pose.position.z = wp['z'] + 0.05
+            sphere.pose.orientation.w = 1.0
             sphere.scale.x = 0.12
             sphere.scale.y = 0.12
             sphere.scale.z = 0.12
@@ -153,6 +154,7 @@ class WaypointRecorderTest():
             text.pose.position.x = wp['x']
             text.pose.position.y = wp['y']
             text.pose.position.z = wp['z'] + 0.25
+            text.pose.orientation.w = 1.0
             text.scale.z = 0.12
             text.color.r = 1.0
             text.color.g = 1.0

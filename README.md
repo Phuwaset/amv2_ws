@@ -77,12 +77,47 @@ Autonomous Mobile Robot (AMV2).
 > **หมายเหตุ:** กราฟนี้เป็นสถานะที่รันจริงผ่าน `amv-start.service` (เปิดเฉพาะ `amv_navigation.launch`); `amv_qr_detection` ถูกคอมเมนต์ไว้ใน launch และ `amv_mapping` ใช้เฉพาะตอนทำแผนที่เท่านั้น
 
 
+After mapping Go to Step2
+
+Step2
+
+* Stop service robot
+
+sudo systemctl stop amv-start.service
+
+* test offine amv-start.service for recoding 
+roslaunch amv_navigation amv_recording.launch
+
+* Manual recodr station with 2d estimate
+rosrun amv_service station_plotting_test.py
+
+* Manual recodr waypoint with 2d nav_goal
+rosrun amv_service waypoint_recorder_test.py
+
+
 Service	ทำอะไร
-/amv/recorder/undo_station	ลบสถานีล่าสุด + เขียน CSV + วาด marker ใหม่
-/amv/recorder/clear_station	ล้างสถานีทั้งหมด
-/amv/recorder/save_station	บันทึก CSV
+rosservice call /amv/recorder/undo_station	ลบสถานีล่าสุด + เขียน CSV + วาด marker ใหม่
+rosservice call /amv/recorder/clear_station	ล้างสถานีทั้งหมด
+rosservice call /amv/recorder/save_station	บันทึก CSV
 
 
-rosservice call /amv/recorder/undo     # ลบ waypoint ล่าสุด + save CSV + วาด marker ใหม่
-rosservice call /amv/recorder/clear    # ล้างทั้งหมด
-rosservice call /amv/recorder/save     # save (บันทึกอัตโนมัติอยู่แล้ว)
+rosservice call /amv/recorder/undo_waypoint     # ลบ waypoint ล่าสุด + save CSV + วาด marker ใหม่
+rosservice call /amv/recorder/clear_waypoint     # ล้างทั้งหมด
+rosservice call /amv/recorder/save_waypoint      # save (บันทึกอัตโนมัติอยู่แล้ว)
+
+
+
+
+มิติการเปรียบเทียบ/planned_path/move_base/PlannedPathPlanner/planโหนดต้นทางpath_planner_node.py  โหนด move_base (ปลั๊กอิน PlannedPathPlanner)  ขอบเขตเส้นทางแนวทางเดินทั้งหมดของภารกิจ (Material Room $\rightarrow$ wy1 $\rightarrow$ wy2 $\rightarrow$ Line1)ตัดเฉพาะช่วงจาก "ตำแหน่งที่รถอยู่ปัจจุบัน" มุ่งหน้าไปหา Goal  ความสัมพันธ์กับ Costmapไม่สนใจ Costmap (คำนวณตาม Topological Graph ใน CSV)  เชื่อมโยงกับ global_costmap เพื่อตรวจสอบสิ่งกีดขวางและอนุญาตให้ Fallback  ปลายทางผู้ใช้งานแสดงผลบน RViz และส่งให้ปลั๊กอิน Planner ดึงไปอ้างอิง  ส่งตรงเข้า Local Planner (DWAPlannerROS) เพื่อคำนวณความเร็วขับล้อ  สถานะเมื่อรถหลุดนอกแนวคงตำแหน่งเส้นเดิมไว้ ไม่เปลี่ยนรูปร่างหากรถอยู่ห่างเกิน $1.0\text{ m}$ จะสลับรูปร่างกลายเป็นเส้นทางของ Navfn อัตโนมัติ  
+
+
+
+ชั้นที่ 1 (ภายนอก): path_planner_node.py ปล่อย /planned_path (เส้นเขียวทั้งสายจาก CSV)ชั้นที่ 2 (Global Planner): PlannedPathPlanner ดึงมาตัดเป็น /move_base/PlannedPathPlanner/plan (เส้นจากจุดที่รถยืนอยู่ $\rightarrow$ ปลายทาง)ชั้นที่ 3 (Local Planner Reference): DWAPlannerROS ดึงไปครอบด้วย Local Costmap กลายเป็น /move_base/DWAPlannerROS/global_plan (ช่วง 3 เมตรข้างหน้ารถ)ชั้นที่ 4 (Trajectory Generation): DWAPlannerROS สุ่มจำลองวิถีขับเคลื่อนจริงออกมาเป็น /move_base/DWAPlannerROS/local_plan แล้วแปลงเป็นคำสั่งส่งลงล้อทางเลือกสำรอง (Safety Fallback): หากรถหลุดรางเกิน 1.0 เมตร ระบบจะตัดการทำงานไปใช้ /move_base/navfn_fallback/plan นำทางแบบพื้นที่อิสระแทนทันที
+
+
+
+Test pub path planner
+rostopic pub -1 /amv/command/goto_station std_msgs/String "data: 'Line1'"
+
+Test pub goto_station
+rosservice call /go_station "target_station: 'Line1'"
