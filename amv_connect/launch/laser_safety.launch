@@ -2,17 +2,43 @@
 <launch>
 
   <node name="laser_safety_zone1" pkg="amv_connect" type='laser_safety' respawn="true">
-
-    <param name="reference_frame" type="string" value="laser_front" /> 
+    
+    <!-- ************************** Old version ********************************************* -->
+    <!-- lidar_front ถูกวางในตำแหน่งเฉียง มุมเอียง (rpy): ค่า Yaw -0.5236 rad แปลงเป็นองศาได้ -30 องศาพอดี (เอียงเฉียงไปทางขวา) -->  
+    
+    <!-- <param name="reference_frame" type="string" value="laser_front" /> 
+    <param name="reference_frame" type="string" value="base_link" />
     <param name="scan_topic" type="string" value="/laser_front" /> 
     <param name="zone_topic" type="string" value="/zone1" /> 
 
     <param name="x_max" type="double" value="0.31" /> 
-    <param name="x_min" type="double" value="0.10" /> 
+    <param name="x_min" type="double" value="0.10" />  
+    
     <param name="y_max" type="double" value="0.35" /> 
     <param name="y_min" type="double" value="-0.35" /> 
 
-    <param name="unsafe_tolerance" type="int" value="3" /> 
+    <param name="unsafe_tolerance" type="int" value="3" />  -->
+
+    <!-- ************************** Old version ********************************************* -->
+
+
+    <!-- ************************** New version 2026 ********************************************* -->
+    
+    <!-- เปลี่ยนเป็น base_link เพื่อให้กล่องตรงตามหน้ารถและสมมาตรซ้าย-ขวา -->
+    <param name="reference_frame" type="string" value="base_link" /> 
+    <param name="scan_topic" type="string" value="/laser_front" /> 
+    <param name="zone_topic" type="string" value="/zone1" /> 
+
+    <!-- ระยะหน้า-หลัง: เริ่มที่ขอบกันชนหน้า 0.39m ยื่นไปข้างหน้าถึง 0.60m -->
+    <param name="x_min" type="double" value="0.39" /> 
+    <param name="x_max" type="double" value="0.45" /> 
+
+    <!-- ระยะซ้าย-ขวา: กว้าง 0.60m เผื่อข้างตัวรถ (0.51m) ฝั่งละ 4.5 ซม. -->
+    <param name="y_min" type="double" value="-0.35" /> 
+    <param name="y_max" type="double" value="0.35" /> 
+
+    <param name="unsafe_tolerance" type="int" value="3" />
+    
   </node >
 </launch>
 
