@@ -1,0 +1,42 @@
+from_node,to_node,mode
+# ==========================================
+# 1. ช่วง Material Room <-> Line1
+# ==========================================
+Material Room,wy1,bidirectional
+wy1,wy2,bidirectional
+wy2,wy3,bidirectional
+wy3,wy4,bidirectional
+wy4,Line1,bidirectional
+
+# ==========================================
+# 2. ช่วง Line1 <-> Line2
+# ==========================================
+Line1,wy5,bidirectional
+wy5,wy6,bidirectional
+wy6,wy7,bidirectional
+wy7,wy8,bidirectional
+wy8,Line2,bidirectional
+
+# ==========================================
+# 3. ช่วง Line2 <-> Line3 (แยกออกจาก wy7)
+# ==========================================
+wy7,wy9,bidirectional
+wy9,wy10,bidirectional
+wy10,wy11,bidirectional
+wy11,Line3,bidirectional
+
+# ==========================================
+# 4. ช่วง Line3 <-> Line4 (แยกออกจาก wy10)
+# ==========================================
+wy10,wy12,bidirectional
+wy12,wy13,bidirectional
+wy13,wy14,bidirectional
+wy14,Line4,bidirectional
+
+# ==========================================
+# 5. ช่วง Line4 <-> Line5 (แยกออกจาก wy13)
+# ==========================================
+wy13,wy15,bidirectional
+wy15,wy16,bidirectional
+wy16,wy17,bidirectional
+wy17,Line5,bidirectional

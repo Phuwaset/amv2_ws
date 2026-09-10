@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch> 
+  <!-- Run map server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_mapping)/map/mektec_20240521.yaml"/>
+  <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find amv_mapping)/map/map_office_202608/office_test_v3.yaml"/> -->
+
+  <!--- Run amcl -->
+  <include file="$(find amv_navigation)/launch/amcl.launch" />  
+  
+  <!--- Run move base -->
+  <arg name="record_mode" default="false" />
+  <include file="$(find amv_navigation)/launch/move_base.launch">
+    <arg name="record_mode" value="$(arg record_mode)"/>
+  </include>
+
+</launch>

@@ -285,3 +285,13 @@ rostopic echo /amcl_pose -n 1
 rostopic echo /nav_vel
 ```
 [cite: 1, 3, 4, 8]
+
+
+
+from_node / to_node: ระบุชื่อจุดตามที่สะกดใน station_list_office.csv และ waypoint_follower_list.csv (ตัวพิมพ์เล็ก-ใหญ่ตรงกัน)
+
+mode:
+
+bidirectional (ไป-กลับได้): สร้างเส้นทางทั้งขาไปและขากลับ
+
+oneway (ทางเดียว): หุ่นจะวิ่งได้เฉพาะจาก from_node มุ่งหน้าไป to_node เท่านั้น

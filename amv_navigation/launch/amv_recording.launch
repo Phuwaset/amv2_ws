@@ -9,7 +9,7 @@
 
   <include file="$(find amv_connect)/launch/amv_base_connect.launch" />
 
-  <include file="$(find amv_navigation)/launch/navigation.launch">
+  <include file="$(find amv_navigation)/launch/navigation_recording.launch">
     <arg name="record_mode" value="true"/>
   </include>
 
