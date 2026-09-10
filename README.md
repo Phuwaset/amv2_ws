@@ -3,6 +3,34 @@
 เอกสารคู่มือสถาปัตยกรรมระบบ การเชื่อมต่อ ROS Computation Graph, ระบบนำทางไฮบริด (Planned Path + DWA Local Planner), สถาปัตยกรรม Background Service (`amv-start.service`) ตลอดจนคู่มือขั้นตอนการบันทึกสถานีและแนวเส้นทางเดินรถ (Teaching & Recording Workflow)[cite: 1, 3]
 
 ---
+## 1. Robot URDF AMV2
+
+```bash
+
+<geometry>
+  <box size="0.770 0.510 0.160"/>
+</geometry>
+
+```
+<p align="center">
+  <img src="amv_connect/urdf/amv2.jpg" alt="AMV2 URDF" width="100%">
+</p>
+
+# ความยาว (แกน X): 0.770 เมตร (77 เซนติเมตร)
+# ความกว้าง (แกน Y): 0.510 เมตร หรือ 51 เซนติเมตร
+# ความสูง (แกน Z): 0.160 เมตร (16 เซนติเมตร)
+
+---
+
+## Ydlidar_front (YDLidar TG50)
+```bash
+<origin xyz="0.345 0 0.150" rpy="0 0 -0.5236"/>
+```
+
+ตำแหน่ง (xyz): y = 0 แสดงว่าติดตั้งอยู่ กึ่งกลางความกว้างของตัวหุ่นพอดีเป๊ะ (ยื่นไปข้างหน้าจากจุดกึ่งกลาง 34.5 ซม.)
+
+มุมเอียง (rpy): ค่า Yaw -0.5236 rad แปลงเป็นองศาได้ -30 องศาพอดี (เอียงเฉียงไปทางขวา)
+
 
 ## 1. ผังการทำงานและการไหลของข้อมูล (ROS Computation Graph & Data Flow)
 
