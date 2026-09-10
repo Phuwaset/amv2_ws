@@ -60,5 +60,5 @@ global_costmap:
   inflation_radius: 0.60      # รัศมีขยายรอบสิ่งกีดขวางใน global (m) -> เพิ่ม = ห่างกำแพงมากขึ้น
   cost_scaling_factor: 2.5   # ความชันการลด cost ตามระยะ -> ลด = cost ลดช้า (ออกห่างมาก)
 local_costmap:
-  inflation_radius: 0.65      # รัศมีขยายรอบสิ่งกีดขวางใน local (m) -> เพิ่ม = เลี่ยงไกลขึ้น
-  cost_scaling_factor: 2.5   # ความชันการลด cost ใน local
+  inflation_radius: 0.2
+  cost_scaling_factor: 0.5
