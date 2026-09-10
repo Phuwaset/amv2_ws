@@ -3,7 +3,7 @@
 เอกสารคู่มือสถาปัตยกรรมระบบ การเชื่อมต่อ ROS Computation Graph, ระบบนำทางไฮบริด (Planned Path + DWA Local Planner), สถาปัตยกรรม Background Service (`amv-start.service`) ตลอดจนคู่มือขั้นตอนการบันทึกสถานีและแนวเส้นทางเดินรถ (Teaching & Recording Workflow)[cite: 1, 3]
 
 ---
-## 1. Robot URDF AMV2
+## Robot URDF AMV2
 
 ```bash
 
@@ -31,6 +31,57 @@
 
 มุมเอียง (rpy): ค่า Yaw -0.5236 rad แปลงเป็นองศาได้ -30 องศาพอดี (เอียงเฉียงไปทางขวา)
 
+
+---
+
+# git cmd
+git push project
+```bash
+# 1. ดึงข้อมูลโค้ดล่าสุดจากเซิร์ฟเวอร์เพื่อให้ข้อมูล branch อัปเดต
+git fetch origin
+# 2. สลับไปยัง branch 'test_office' ที่ต้องการอัปเดตงาน (หากยังไม่เคย checkout ลงมาในเครื่อง ให้ใช้คำสั่งนี้)
+git checkout test_office 
+# 3.git add ได้เลย ทีละไฟล์
+git add amv_connect/urdf/amv2.jpg
+git add amv_service/station/station_list_office.csv
+git add README.md
+# 4.git add all
+git add .
+# 5 ตรวจสอบ สถานะการ add
+git status
+# 6 git commit ตั้งชื่อว่าทำอะไรไปบ้าง  
+git commit -m "Add amv2.jpg, update station list and README for office branch"
+# 7 Push งานขึ้นไปยัง branch office
+git push origin office
+```
+
+git update 
+
+```bash
+# 1. อัปเดตฐานข้อมูล Git ในเครื่องให้รับรู้โค้ดล่าสุดบนเซิร์ฟเวอร์
+git fetch origin
+
+# 2. ใช้คำสั่งดึงเฉพาะไฟล์ README.md จาก test_office มาทับใน branch ปัจจุบันของคุณ
+git checkout origin/test_office -- README.md
+```
+
+
+git merge & pull
+
+```bash
+# 1. สลับกลับไปที่ Branch หลักของโปรเจกต์ (ลองดูว่าเป็น main หรือ master)
+git checkout main
+
+# 2. ดึงโค้ดล่าสุดจาก GitHub ลงมาอัปเดตก่อน
+git pull origin main
+
+# 3. ดึงโค้ดจาก branch test_office มารวมเข้ากับ branch หลัก
+git merge test_office
+
+# 4. Push ผลลัพธ์ที่รวมกันแล้วขึ้น GitHub
+git push origin main
+```
+---
 
 ## 1. ผังการทำงานและการไหลของข้อมูล (ROS Computation Graph & Data Flow)
 
