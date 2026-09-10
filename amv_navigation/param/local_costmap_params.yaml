@@ -12,12 +12,13 @@ local_costmap:
   height: 3
   resolution: 0.05
 
-  inflation_radius: 1.2
-  cost_scaling_factor: 1.0
+  inflation_radius: 0.3
+  cost_scaling_factor: 4.0    
 
   plugins:
-    - {name: static_layer, type: "costmap_2d::StaticLayer"}    
+    # ทำหน้าที่ จับเส้นขอบที่มองเป็นสิ่งกีดขวาง ก็คือ เส้นสีสำ แล้วแปลงออกไปเป็นเส้นสีชมพู ม่วง ใน rviz /map//move_base/local_costmap/costmap เปลี่ยน Color Scheme เป็น Costmap ด้วย
+    - {name: static_layer, type: "costmap_2d::StaticLayer"}   
     #- {name: laser_obstacle_layer, type: "costmap_2d::VoxelLayer"}
     #- {name: stvl_obstacle_layer, type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
-    #- {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
   
