@@ -58,10 +58,13 @@ git push origin office
 git update 
 
 ```bash
-# 1. อัปเดตฐานข้อมูล Git ในเครื่องให้รับรู้โค้ดล่าสุดบนเซิร์ฟเวอร์
+# Update Origin user gaobal
+git config --global user.email "100694995+Phuwaset@users.noreply.github.com"
+
+# อัปเดตฐานข้อมูล Git ในเครื่องให้รับรู้โค้ดล่าสุดบนเซิร์ฟเวอร์
 git fetch origin
 
-# 2. ใช้คำสั่งดึงเฉพาะไฟล์ README.md จาก test_office มาทับใน branch ปัจจุบันของคุณ
+# ใช้คำสั่งดึงเฉพาะไฟล์ README.md จาก test_office มาทับใน branch ปัจจุบันของคุณ
 git checkout origin/test_office -- README.md
 ```
 
@@ -285,3 +288,13 @@ rostopic echo /amcl_pose -n 1
 rostopic echo /nav_vel
 ```
 [cite: 1, 3, 4, 8]
+
+
+
+from_node / to_node: ระบุชื่อจุดตามที่สะกดใน station_list_office.csv และ waypoint_follower_list.csv (ตัวพิมพ์เล็ก-ใหญ่ตรงกัน)
+
+mode:
+
+bidirectional (ไป-กลับได้): สร้างเส้นทางทั้งขาไปและขากลับ
+
+oneway (ทางเดียว): หุ่นจะวิ่งได้เฉพาะจาก from_node มุ่งหน้าไป to_node เท่านั้น

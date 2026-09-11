@@ -3,8 +3,8 @@ import rospy
 import csv
 import math
 import os
+import heapq
 import tf2_ros
-from collections import deque
 
 from std_msgs.msg import String
 from nav_msgs.msg import Path
@@ -14,23 +14,34 @@ class BranchingPathPlanner:
     def __init__(self):
         rospy.init_node('path_planner_node', anonymous=False)
 
-        # โหลดพารามิเตอร์ไฟล์
+        # ---------------------------------------------------------
+        # Parameters
+        # ---------------------------------------------------------
         self.station_csv = rospy.get_param('~station_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/station_list_office.csv'))
         self.waypoint_csv = rospy.get_param('~waypoint_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/waypoint_follower_list.csv'))
+        self.track_csv = rospy.get_param('~track_csv', os.path.expanduser('~/amv_ws/src/amv_service/station/manual_track.csv'))
+        
+        # สวิตช์บังคับสองทาง: True = บังคับให้ทุกเส้นวิ่งไป-กลับได้, False = อิงตามคอลัมน์ mode ใน manual_track.csv
+        self.force_twoway = rospy.get_param('~force_twoway', False)
+        
         self.frame_id = rospy.get_param('~frame_id', 'map')
+        self.base_frame = rospy.get_param('~base_frame', 'base_footprint')
         self.step_size = rospy.get_param('~step_size', 0.05)
-        self.max_connect_dist = rospy.get_param('~max_connect_dist', 1.8) # ระยะเชื่อมโยงโหนดทางแยก
+        self.max_connect_dist = rospy.get_param('~max_connect_dist', 3.0)
 
+        # ---------------------------------------------------------
+        # TF & ROS Interfaces
+        # ---------------------------------------------------------
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         self.path_pub = rospy.Publisher('/planned_path', Path, queue_size=1, latch=True)
         self.cmd_sub = rospy.Subscriber('/amv/command/goto_station', String, self.command_cb)
 
-        self.nodes = {}       # รวมทั้ง Waypoints และ Stations เข้าเป็น Node กราฟ
-        self.adj_list = {}    # รายการเชื่อมต่อเส้นทาง (Graph Edges)
-        self.stations = {}
-        
+        self.nodes = {}       # โหนดทั้งหมด {node_name: {x, y, qz, qw, type}}
+        self.adj_list = {}    # โครงข่ายเส้นเชื่อม {node_name: [(neighbor_name, dist), ...]}
+        self.stations = {}    # รายชื่อสถานีหลักสำหรับค้นหา {station_lower: node_data}
+
         self.load_graph_data()
         rospy.loginfo("[BranchingPathPlanner] Graph Routing System Online.")
 
@@ -39,63 +50,119 @@ class BranchingPathPlanner:
         self.stations = {}
         self.adj_list = {}
 
-        # 1. โหลดสถานีหลัก
+        # 1. โหลดข้อมูลสถานีหลัก
         if os.path.exists(self.station_csv):
             with open(self.station_csv, mode='r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    name = row.get('name', '').strip()
+                    if not row:
+                        continue
+                    name = (row.get('name') or '').strip()
                     if name:
-                        node_data = {
-                            'name': name,
-                            'x': float(row['x']),
-                            'y': float(row['y']),
-                            'qz': float(row.get('qz', 0.0)),
-                            'qw': float(row.get('qw', 1.0)),
-                            'type': 'station'
-                        }
-                        self.nodes[name] = node_data
-                        self.stations[name.lower()] = node_data
+                        try:
+                            node_data = {
+                                'name': name,
+                                'x': float(row['x']),
+                                'y': float(row['y']),
+                                'qz': float(row.get('qz', 0.0) or 0.0),
+                                'qw': float(row.get('qw', 1.0) or 1.0),
+                                'type': 'station'
+                            }
+                            self.nodes[name] = node_data
+                            self.stations[name.lower()] = node_data
+                        except (ValueError, KeyError) as e:
+                            rospy.logwarn(f"[Planner] Skipping invalid station row: {row} ({e})")
 
-        # 2. โหลด Waypoints ทางแยก/ทางเดิน
+        # 2. โหลดข้อมูล Waypoints
         if os.path.exists(self.waypoint_csv):
             with open(self.waypoint_csv, mode='r', encoding='utf-8') as f:
                 for row in csv.DictReader(f):
-                    name = row.get('name', '').strip()
+                    if not row:
+                        continue
+                    name = (row.get('name') or '').strip()
                     if name:
-                        self.nodes[name] = {
-                            'name': name,
-                            'x': float(row['x']),
-                            'y': float(row['y']),
-                            'qz': float(row.get('qz', 0.0)),
-                            'qw': float(row.get('qw', 1.0)),
-                            'type': 'waypoint'
-                        }
+                        try:
+                            self.nodes[name] = {
+                                'name': name,
+                                'x': float(row['x']),
+                                'y': float(row['y']),
+                                'qz': float(row.get('qz', 0.0) or 0.0),
+                                'qw': float(row.get('qw', 1.0) or 1.0),
+                                'type': 'waypoint'
+                            }
+                        except (ValueError, KeyError) as e:
+                            rospy.logwarn(f"[Planner] Skipping invalid waypoint row: {row} ({e})")
 
-        # 3. สร้าง Graph เชื่อมต่อโหนดทางแยกตามระยะทาง (Proximity Graph Builder)
-        for n1_name, n1 in self.nodes.items():
-            self.adj_list[n1_name] = []
-            for n2_name, n2 in self.nodes.items():
-                if n1_name == n2_name:
-                    continue
-                d = math.hypot(n1['x'] - n2['x'], n1['y'] - n2['y'])
-                if d <= self.max_connect_dist:
-                    self.adj_list[n1_name].append((n2_name, d))
+        # กำหนด Adjacent List ว่างสำหรับทุกโหนด
+        for n_name in self.nodes.keys():
+            self.adj_list[n_name] = []
+
+        # แมปชื่อโหนดแบบ case-insensitive เพื่อป้องกันปัญหาตัวพิมพ์เล็ก-ใหญ่ใน CSV
+        lower_to_node = {k.lower(): k for k in self.nodes.keys()}
+
+        # 3. สร้าง Graph เชื่อมต่อ
+        loaded_edges = 0
+        if os.path.exists(self.track_csv):
+            rospy.loginfo(f"[Planner] Loading explicit tracks from: {self.track_csv}")
+            with open(self.track_csv, mode='r', encoding='utf-8') as f:
+                for row in csv.DictReader(f):
+                    if not row:
+                        continue
+                    from_raw = (row.get('from_node') or '').strip()
+                    to_raw = (row.get('to_node') or '').strip()
+                    mode = (row.get('mode') or 'bidirectional').strip().lower()
+
+                    if not from_raw or not to_raw:
+                        continue
+
+                    u = lower_to_node.get(from_raw.lower())
+                    v = lower_to_node.get(to_raw.lower())
+
+                    if u and v:
+                        d = math.hypot(self.nodes[u]['x'] - self.nodes[v]['x'],
+                                       self.nodes[u]['y'] - self.nodes[v]['y'])
+                        
+                        # สร้างเส้น u -> v
+                        self.adj_list[u].append((v, d))
+                        loaded_edges += 1
+
+                        # ถ้าเป็น bidirectional หรือเปิด force_twoway ให้สร้างเส้น v -> u
+                        if mode == 'bidirectional' or self.force_twoway:
+                            self.adj_list[v].append((u, d))
+                            loaded_edges += 1
+                    else:
+                        missing = []
+                        if not u: missing.append(from_raw)
+                        if not v: missing.append(to_raw)
+                        rospy.logwarn(f"[Planner] Edge skipped: {missing} not defined in CSVs.")
+
+            rospy.loginfo(f"[Planner] Loaded {loaded_edges} directed tracks successfully.")
+
+        # Fallback หากไม่มี manual_track.csv หรือไม่มีการประกาศ Edge ที่ใช้งานได้
+        if loaded_edges == 0:
+            rospy.logwarn(f"[Planner] No valid edges loaded from tracks. Falling back to proximity graph (max {self.max_connect_dist}m).")
+            for n1_name, n1 in self.nodes.items():
+                for n2_name, n2 in self.nodes.items():
+                    if n1_name == n2_name:
+                        continue
+                    d = math.hypot(n1['x'] - n2['x'], n1['y'] - n2['y'])
+                    if d <= self.max_connect_dist:
+                        self.adj_list[n1_name].append((n2_name, d))
 
     def get_robot_pose(self):
         try:
-            trans = self.tf_buffer.lookup_transform(self.frame_id, 'base_footprint', rospy.Time(0), rospy.Duration(0.1))
+            trans = self.tf_buffer.lookup_transform(self.frame_id, self.base_frame, rospy.Time(0), rospy.Duration(0.2))
             return trans.transform.translation.x, trans.transform.translation.y
-        except Exception:
+        except Exception as e:
+            rospy.logwarn_throttle(2.0, f"[Planner] TF lookup failed ({self.frame_id} -> {self.base_frame}): {e}")
             return None, None
 
     def find_shortest_path(self, start_node, goal_node):
-        """Dijkstra Search เพื่อหาเส้นทางผ่านจุดตัดทางแยกที่ถูกต้อง"""
-        queue = [(0, start_node, [start_node])]
+        """Dijkstra Algorithm ค้นหาเส้นทางที่ผ่านเฉพาะ Edge ที่กำหนดไว้"""
+        queue = [(0.0, start_node, [start_node])]
         visited = set()
 
         while queue:
-            queue.sort(key=lambda x: x[0])
-            cost, curr, path = queue.pop(0)
+            cost, curr, path = heapq.heappop(queue)
 
             if curr == goal_node:
                 return path
@@ -106,35 +173,42 @@ class BranchingPathPlanner:
 
             for neighbor, weight in self.adj_list.get(curr, []):
                 if neighbor not in visited:
-                    queue.append((cost + weight, neighbor, path + [neighbor]))
+                    heapq.heappush(queue, (cost + weight, neighbor, path + [neighbor]))
         return None
 
     def command_cb(self, msg):
         target_name = msg.data.strip()
+        
+        # รีโหลดข้อมูลทุกครั้งที่รับคำสั่ง
         self.load_graph_data()
 
         if target_name.lower() not in self.stations:
-            rospy.logerr(f"[Planner] Station '{target_name}' not found!")
+            rospy.logerr(f"[Planner] Station '{target_name}' not found in database!")
             return
 
         target_key = self.stations[target_name.lower()]['name']
         rx, ry = self.get_robot_pose()
         if rx is None:
-            rospy.logerr("[Planner] Cannot acquire AMCL robot pose!")
+            rospy.logerr(f"[Planner] Cannot acquire TF transform from '{self.frame_id}' to '{self.base_frame}'!")
             return
 
-        # 1. หาโหนด/ทางแยกที่ใกล้ตัวรถที่สุด
-        nearest_node = min(self.nodes.keys(), key=lambda k: math.hypot(self.nodes[k]['x'] - rx, self.nodes[k]['y'] - ry))
+        # 1. หาโหนดที่มีทางเชื่อม (degree > 0) และใกล้ตัวรถที่สุด
+        connectable_nodes = [k for k, v in self.adj_list.items() if len(v) > 0]
+        if not connectable_nodes:
+            rospy.logerr("[Planner] No connected nodes found in graph!")
+            return
 
-        # 2. คำนวณเส้นทางผ่านโครงข่ายทางแยก
+        nearest_node = min(connectable_nodes, key=lambda k: math.hypot(self.nodes[k]['x'] - rx, self.nodes[k]['y'] - ry))
+
+        # 2. คำนวณเส้นทาง
         route = self.find_shortest_path(nearest_node, target_key)
         if not route:
-            rospy.logerr(f"[Planner] No valid route to '{target_key}'!")
+            rospy.logerr(f"[Planner] No valid route from '{nearest_node}' to '{target_key}'! Check manual_track.csv connections.")
             return
 
         rospy.loginfo(f"[Planner] Active Route: {' -> '.join(route)}")
 
-        # 3. สร้าง Sub-waypoints ออกมาเป็น nav_msgs/Path
+        # 3. Interpolate จุดเส้นทางออกเป็น nav_msgs/Path
         path_msg = Path()
         path_msg.header.frame_id = self.frame_id
         path_msg.header.stamp = rospy.Time.now()
@@ -153,9 +227,20 @@ class BranchingPathPlanner:
                 pose.header.frame_id = self.frame_id
                 pose.pose.position.x = p1['x'] + (dx * r)
                 pose.pose.position.y = p1['y'] + (dy * r)
+                pose.pose.position.z = 0.0
+                pose.pose.orientation.x = 0.0
+                pose.pose.orientation.y = 0.0
                 pose.pose.orientation.z = math.sin(yaw / 2.0)
                 pose.pose.orientation.w = math.cos(yaw / 2.0)
                 path_msg.poses.append(pose)
+
+        # จุดสุดท้ายส่ง Orientation ตามค่าของสถานีเป้าหมาย
+        if path_msg.poses:
+            target_node_data = self.nodes[target_key]
+            path_msg.poses[-1].pose.orientation.x = 0.0
+            path_msg.poses[-1].pose.orientation.y = 0.0
+            path_msg.poses[-1].pose.orientation.z = target_node_data['qz']
+            path_msg.poses[-1].pose.orientation.w = target_node_data['qw']
 
         self.path_pub.publish(path_msg)
 

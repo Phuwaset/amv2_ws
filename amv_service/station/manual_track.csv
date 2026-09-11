@@ -1,0 +1,104 @@
+from_node,to_node,mode
+# ==========================================
+# 1. ช่วง Material Room <-> Line1
+# ==========================================
+Material Room,wy1,bidirectional
+wy1,wy2,bidirectional
+wy2,wy3,bidirectional
+wy3,wy4,bidirectional
+wy4,Line1,bidirectional
+
+# ==========================================
+# 2. ช่วง Line1 <-> Line2
+# ==========================================
+Line1,wy5,bidirectional
+wy5,wy6,bidirectional
+wy6,wy7,bidirectional
+wy7,wy8,bidirectional
+wy8,Line2,bidirectional
+
+# ==========================================
+# 3. ช่วง Line2 <-> Line3 (แยกออกจาก wy7)
+# ==========================================
+wy7,wy9,bidirectional
+wy9,wy10,bidirectional
+wy10,wy11,bidirectional
+wy11,Line3,bidirectional
+
+# ==========================================
+# 4. ช่วง Line3 <-> Line4 (แยกออกจาก wy10)
+# ==========================================
+wy10,wy12,bidirectional
+wy12,wy13,bidirectional
+wy13,wy14,bidirectional
+wy14,Line4,bidirectional
+
+# ==========================================
+# 5. ช่วง Line4 <-> Line5 (แยกออกจาก wy13)
+# ==========================================
+wy13,wy15,bidirectional
+wy15,wy16,bidirectional
+wy16,wy17,bidirectional
+wy17,Line5,bidirectional
+
+# ==========================================
+# 6. ช่วง Line5 <-> Line6 (แยกออกจาก wy16)
+# ==========================================
+wy16,wy18,bidirectional
+wy18,wy19,bidirectional
+wy19,wy20,bidirectional
+wy20,Line6,bidirectional
+
+# ==========================================
+# 7. ช่วง Line6 <-> Line7 (แยกออกจาก wy19)
+# ==========================================
+wy19,wy21,bidirectional
+wy21,wy22,bidirectional
+wy22,wy23,bidirectional
+wy23,Line7,bidirectional
+
+# ==========================================
+# 8. ช่วง Line7 <-> Line8 (แยกออกจาก wy22)
+# ==========================================
+wy22,wy24,bidirectional
+wy24,wy25,bidirectional
+wy25,wy26,bidirectional
+wy26,wy27,bidirectional
+wy27,Line8,bidirectional
+
+# ==========================================
+# 9. ช่วง Line8 <-> Line9 (แยกออกจาก wy26)
+# ==========================================
+wy26,wy28,bidirectional
+wy28,wy29,bidirectional
+wy29,wy30,bidirectional
+wy30,wy31,bidirectional
+wy31,Line9,bidirectional
+
+# ==========================================
+# 10. ช่วง Line9 <-> Line10 (แยกออกจาก wy30)
+# ==========================================
+wy30,wy32,bidirectional
+wy32,wy33,bidirectional
+wy33,wy34,bidirectional
+wy34,wy35,bidirectional
+wy35,Line10,bidirectional
+
+
+# ==========================================
+# 11. ช่วง Line10 <-> Line11 (แยกออกจาก wy34)
+# ==========================================
+wy34,wy36,bidirectional
+wy36,wy37,bidirectional
+wy37,wy38,bidirectional
+wy38,wy39,bidirectional
+wy39,Line11,bidirectional
+
+# ==========================================
+# 12. ช่วง Line11 <-> Line13 (แยกออกจาก wy34)
+# ==========================================
+Line11,wy40,bidirectional
+wy40,wy41,bidirectional
+wy41,wy42,bidirectional
+wy42,wy43,bidirectional
+wy43,Line13,bidirectional
