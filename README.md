@@ -267,14 +267,14 @@ rosservice call /amv/recorder/save_waypoint "{}"
 ```bash
 rostopic pub -1 /amv/command/goto_station std_msgs/String "data: 'Line1'"
 ```
-[cite: 2, 3]
+
 
 ### ทดสอบสั่งหุ่นยนต์เคลื่อนที่ไปยังสถานี (Service Call)
 สั่งให้หุ่นยนต์เริ่มเคลื่อนที่ปฏิบัติภารกิจเดินทางไปยังสถานีเป้าหมาย:
 ```bash
 rosservice call /go_station "target_station: 'Line1'"
 ```
-[cite: 3]
+
 
 ### คำสั่งตรวจสอบสถานะและสัญญาณ (Diagnostics)
 ```bash
@@ -287,14 +287,81 @@ rostopic echo /amcl_pose -n 1
 # ตรวจสอบคำสั่งความเร็วขับเคลื่อนมอเตอร์
 rostopic echo /nav_vel
 ```
-[cite: 1, 3, 4, 8]
 
+---
 
+#  Schema & Architecture (โครงสร้างฐานข้อมูล)
 
-from_node / to_node: ระบุชื่อจุดตามที่สะกดใน station_list_office.csv และ waypoint_follower_list.csv (ตัวพิมพ์เล็ก-ใหญ่ตรงกัน)
+ใช้ฐานข้อมูลไฟล์ข้อความ CSV จำนวน 3 ชุด เพื่อแยกบทบาทของข้อมูลและง่ายต่อการแก้ไขหน้างาน
 
-mode:
+1.1 station_list.csv (สถานีหลักและจุดเทียบจอด)
+หน้าที่: เก็บพิกัดเป้าหมายหลัก ทิศทางการเทียบจอด (Docking Heading) และระยะเวลาหยุดถ่ายโอนงาน
 
-bidirectional (ไป-กลับได้): สร้างเส้นทางทั้งขาไปและขากลับ
+```bash
+name,mode,timer,pin,x,y,z,qx,qy,qz,qw
+```
+name: คีย์หลักระบุสถานี เช่น Material Room, Line1 – Line14
+x, y: พิกัดตำแหน่งบนแผนที่หน่วยเป็นเมตร
+qz, qw: ค่า Normalized Quaternion กำหนดองศาการหันหน้าของหุ่นยนต์
+timer: เวลาหน่วงเมื่อเข้าสู่สถานะเทียบจอดสำเร็จ (หน่วยวินาที)
 
-oneway (ทางเดียว): หุ่นจะวิ่งได้เฉพาะจาก from_node มุ่งหน้าไป to_node เท่านั้น
+<p align="center">
+  <img src="amv_virtual_track/docs/image/station_csv.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+1.2 waypoint_follower_list.csv (ทางเดินย่อย)
+หน้าที่: เก็บพิกัดจุดนำทางย่อย (wy1, wy2... wy43) ที่สอนผ่านการคลิก 2D Nav Goal บน RViz เพื่อกำหนดแนวเส้นทางในโถงทางเดินและทางเลี้ยว
+โครงสร้างคอลัมน์: โครงสร้างเดียวกันกับ station_list.csv (name,mode,timer,pin,x,y,z,qx,qy,qz,qw)
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/wy.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+1.3 manual_track.csv (โครงข่ายเส้นเชื่อมทางเดิน - Explicit Graph Edges)
+หน้าที่: กำหนดเส้นเชื่อมต่อ (Graph Edges) ระหว่างโหนดสถานีและ Waypoints เพื่อบังคับโครงสร้างรางเสมือน (Corridor Routing) ป้องกันไม่ให้อัลกอริทึมลากเส้นตัดทะลุกำแพง
+
+พารามิเตอร์การเชื่อมโยง:
+
+          from_node: โหนดต้นทาง (รองรับทั้งชื่อสถานีและชื่อ Waypoint)
+
+          to_node: โหนดปลายทาง [source: 1]
+
+          mode: ทิศทางการสัญจร เช่น bidirectional (เดินหน้า-ถอยหลังได้) หรือ oneway (เดินรถทางเดียว)
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/manual_track.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+---
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/เจาะลึกระบบนำทางรางเสมือน_AMV2.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/1.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/2.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/3.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/4.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/5.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/6.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
+
+<p align="center">
+  <img src="amv_virtual_track/docs/image/7.png" alt="AMV2 ROS Computation Graph" width="100%">
+</p>
