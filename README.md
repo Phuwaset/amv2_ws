@@ -86,7 +86,7 @@ git push origin main
 ```
 ---
 
-## 1. ผังการทำงานและการไหลของข้อมูล (ROS Computation Graph & Data Flow)
+## ผังการทำงานและการไหลของข้อมูล (ROS Computation Graph & Data Flow)
 
 ระบบทำงานบน **ROS 1 Noetic**[cite: 1, 6] รองรับการประมวลผลแบบ Distributed Node ทั้งการควบคุมอัตโนมัติ การคัดกรองสิทธิ์ความปลอดภัย และการเชื่อมต่อ Web HMI[cite: 1, 3]
 
@@ -116,7 +116,7 @@ git push origin main
 
 ---
 
-## 2. รายการโหนดและแพ็กเกจหลัก (Node & Package Registry)
+## ายการโหนดและแพ็กเกจหลัก (Node & Package Registry)
 
 | โหนด (Node) | แพ็กเกจ (Package) | บทบาทและหน้าที่หลัก |
 |---|---|---|
@@ -138,7 +138,7 @@ git push origin main
 
 ---
 
-## 3. โครงสร้างระบบวางแผนเส้นทาง (Navigation & Planner Pipeline)
+## โครงสร้างระบบวางแผนเส้นทาง (Navigation & Planner Pipeline)
 
 AMV2 ใช้สถาปัตยกรรมวางแผนเส้นทางแบบ **4 ระดับ (Multi-Layer Pipeline)** เพื่อบังคับให้รถเกาะแนวโครงข่ายเสมือน (Topological Virtual Track) ตามมาตรฐานความปลอดภัยในพื้นที่ปิด[cite: 3, 5]:
 
@@ -181,7 +181,7 @@ DWAPlannerROS ──> /move_base/DWAPlannerROS/local_plan (จำลองวิ
 
 ---
 
-## 4. การจัดการ Service เบื้องหลัง (`amv-start.service`)
+## การจัดการ Service เบื้องหลัง (`amv-start.service`)
 
 ระบบอัตโนมัติของตัวรถทำงานผ่าน Systemd ภายใต้ชื่อบริการ `amv-start.service`[cite: 1, 8]:
 
@@ -199,7 +199,7 @@ sudo systemctl status amv-start.service
 
 ---
 
-## 5. ขั้นตอนการบันทึกสถานีและเส้นทาง (Step 2: Teaching & Recording Workflow)
+## ขั้นตอนการบันทึกสถานีและเส้นทาง (Step 2: Teaching & Recording Workflow)
 
 เมื่อจัดทำแผนที่ (Mapping) เสร็จสิ้น ให้ดำเนินตามขั้นตอน Step 2 ด้านล่างเพื่อทำการบันทึกพิกัดสถานีและ Waypoint[cite: 1, 3]:
 
@@ -267,7 +267,14 @@ rosservice call /amv/recorder/save_waypoint "{}"
 ```bash
 rostopic pub -1 /amv/command/goto_station std_msgs/String "data: 'Line1'"
 ```
-
+ทดสอบสั่งให้ `path_planner_node.py`
+```bash
+rosrun amv_virtual_track path_planner_node.py
+```
+ทดสอบสั่งให้ Visualization 
+```bash
+rosrun amv_virtual_track planned_path_visualizer.py
+```
 
 ### ทดสอบสั่งหุ่นยนต์เคลื่อนที่ไปยังสถานี (Service Call)
 สั่งให้หุ่นยนต์เริ่มเคลื่อนที่ปฏิบัติภารกิจเดินทางไปยังสถานีเป้าหมาย:
