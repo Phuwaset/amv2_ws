@@ -58,10 +58,13 @@ git push origin office
 git update 
 
 ```bash
-# 1. อัปเดตฐานข้อมูล Git ในเครื่องให้รับรู้โค้ดล่าสุดบนเซิร์ฟเวอร์
+# Update Origin user gaobal
+git config --global user.email "100694995+Phuwaset@users.noreply.github.com"
+
+# อัปเดตฐานข้อมูล Git ในเครื่องให้รับรู้โค้ดล่าสุดบนเซิร์ฟเวอร์
 git fetch origin
 
-# 2. ใช้คำสั่งดึงเฉพาะไฟล์ README.md จาก test_office มาทับใน branch ปัจจุบันของคุณ
+# ใช้คำสั่งดึงเฉพาะไฟล์ README.md จาก test_office มาทับใน branch ปัจจุบันของคุณ
 git checkout origin/test_office -- README.md
 ```
 
