@@ -28,7 +28,7 @@
 
     <rosparam file="$(find amv_navigation)/config/prohibition_areas_office.yaml" command="load" ns="global_costmap/costmap_prohibition_layer" />
 
-    <rosparam file="$(find amv_virtual_track)/param/amv_tuning.yaml" command="load" />
+    <rosparam file="$(find amv_navigation)/param/amv_tuning.yaml" command="load" />
 
     <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
     <remap from="odom" to="$(arg odom_topic)"/>
