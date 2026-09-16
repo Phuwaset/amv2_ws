@@ -7,7 +7,7 @@
   <include file="$(find amv_navigation)/launch/navigation.launch" /> 
 
   <!--- AMV Control Service -->
-  <include file="$(find amv_service)/launch/amv_navigation_service.launch" />
+  <include file="$(find amv_service)/launch/amv_control_service.launch" />
 
   <!--- QR Landmark -->
   <!--<include file="$(find amv_qr_detection)/launch/qr_landmark.launch" />-->
