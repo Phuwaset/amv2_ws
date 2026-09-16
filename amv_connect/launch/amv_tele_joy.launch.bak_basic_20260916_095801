@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node type="joy_node" pkg="joy" name="joy">
+            <param name="dev" value="/dev/input/js0"/>
+            <param name="autorepeat_rate" value="1"/>
+    </node>
+
+    <node type="teleop_node" pkg="teleop_twist_joy" name="joy_to_twist">
+	<remap from="cmd_vel" to="joy_vel"/>
+        <param name="scale_linear" value="0.5"/>
+        <param name="scale_angular" value="0.5"/>
+        <param name="enable_button" value="4"/>
+    </node>
+
+</launch>

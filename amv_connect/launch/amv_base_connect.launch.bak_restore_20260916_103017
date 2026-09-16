@@ -1,10 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- Force real-robot mode: never wait for a /clock topic from a simulator -->
-  <param name="/use_sim_time" value="false" />
-
-  <node pkg="amv_connect" type="amv_base_node.py" name="amv_base" output="screen">
+  <node pkg="amv_connect" type="amv_base_node_28082026.py" name="amv_base" output="screen">
     <!--<param name="port" value="/dev/arduino_mega" />-->
     <param name="port" value="/dev/amv_controller" />
     <param name="baud" value="57600" />
@@ -29,3 +26,5 @@
   <include file="$(find amv_connect)/launch/amv_pose_publish.launch"/>
   
 </launch>
+
+
