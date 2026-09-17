@@ -9,7 +9,7 @@
   </node> 
 
   <node pkg="amv_virtual_track" type="path_planner_node.py" name="path_planner_node" output="screen">
-    <param name="station_csv"  value="$(find amv_service)/station/station_list_office.csv" />
+    <param name="station_csv"  value="$(find amv_service)/station/station_list.csv" />
     <param name="waypoint_csv" value="$(find amv_service)/station/waypoint_follower_list.csv" />
     <param name="frame_id"     value="map" />
     <param name="step_size"    value="0.05" />
