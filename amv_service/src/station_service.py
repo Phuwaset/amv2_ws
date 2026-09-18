@@ -38,6 +38,8 @@ class StationService():
             reader = csv.reader(file, delimiter = ',')
             print ('station service is readed')
             for row in reader:                
+                if not row:
+                    continue
                 if row[0] != 'name':    #check header name --> no,mode,timer,pin,x,y,z,qx,qy,qz,qw
                     print (row[0])  
                     station = StationData()
