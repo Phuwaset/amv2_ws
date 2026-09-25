@@ -1,0 +1,125 @@
+from_node,to_node,mode
+# ==========================================,,
+# ช่วง Mat'I AI <-> Line AS 2-3 AI,,
+# ==========================================,,
+Mat'l AI,wy1,bidirectional
+wy1,wy2,bidirectional
+wy2,wy3,bidirectional
+wy3,wy4,bidirectional
+wy4,wy5,bidirectional
+wy5,wy6,bidirectional
+wy6,wy7,bidirectional
+wy7,wy8,bidirectional
+wy8,wy9,bidirectional
+wy9,wy10,bidirectional
+wy10,wy11,bidirectional
+wy11,wy12,bidirectional
+wy12,wy13,bidirectional
+wy13,wy14,bidirectional
+wy14,wy15,bidirectional
+wy15,Line AS 2-3 AI,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 2-3 AI <-> Line AS 4-5 AI,,
+# ==========================================,,
+Line AS 2-3 AI,wy15,bidirectional
+wy15,wy16,bidirectional
+wy16,wy17,bidirectional
+wy17,wy18,bidirectional
+wy18,Line AS 4-5 AI,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 4-5 AI <-> Line AS 6 AI,,
+# ==========================================,,
+Line AS 4-5 AI,wy18,bidirectional
+wy18,wy17,bidirectional
+wy17,wy19,bidirectional
+wy19,wy20,bidirectional
+wy20,wy21,bidirectional
+wy21,wy22,bidirectional
+wy22,Line AS 6 AI,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 6 AI <-> Line AS 7 AI,,
+# ==========================================,,
+Line AS 6 AI,wy22,bidirectional
+wy22,wy21,bidirectional
+wy21,wy23,bidirectional
+wy23,wy24,bidirectional
+wy24,wy25,bidirectional
+wy25,wy26,bidirectional
+wy26,wy27,bidirectional
+wy27,Line AS 7 AI,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 7 AI <-> Line AS 10 AI,,
+# ==========================================,,
+Line AS 7 AI,wy27,bidirectional
+wy27,wy26,bidirectional
+wy26,wy28,bidirectional
+wy28,wy29,bidirectional
+wy29,wy30,bidirectional
+wy30,wy31,bidirectional
+wy31,Line AS 10 AI,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 10 AI <-> Line 9-10 JC,,
+# ==========================================,,
+Line AS 10 AI,wy31,bidirectional
+wy31,wy30,bidirectional
+wy30,wy32,bidirectional
+wy32,wy33,bidirectional
+wy33,Line 9-10 JC,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line 9-10 JC <-> Line AS 11 AI ,,
+# ==========================================,,
+Line 9-10 JC,wy33,bidirectional
+wy33,wy32,bidirectional
+wy32,wy34,bidirectional
+wy34,wy35,bidirectional
+wy35,wy36,bidirectional
+wy36,wy37,bidirectional
+wy37,Line AS 11 AI ,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line AS 11 AI  ↔ Line 1-2 JC,,
+# ==========================================,,
+Line AS 11 AI ,wy37,bidirectional
+wy37,wy36,bidirectional
+wy36,wy38,bidirectional
+wy38,wy39,bidirectional
+wy39,wy40,bidirectional
+wy40,Line 1-2 JC,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line 1-2 JC  ↔ Line 3-4 JC,,
+# ==========================================,,
+Line 1-2 JC,wy40,bidirectional
+wy40,wy41,bidirectional
+wy41,wy42,bidirectional
+wy42,wy43,bidirectional
+wy43,Line 3-4 JC,bidirectional
+,,
+# ==========================================,,
+# ช่วง Line 3-4 JC  ↔ Mat'l JC,,
+# ==========================================,,
+Line 3-4 JC,wy44,bidirectional
+wy44,wy45,bidirectional
+wy45,wy46,bidirectional
+wy46,wy47,bidirectional
+wy47,wy48,bidirectional
+wy48,wy49,bidirectional
+wy49,wy50,bidirectional
+wy50,wy51,bidirectional
+wy51,Mat'l JC,bidirectional
+,,
+# ==========================================,,
+# ช่วง Mat'l JC  ↔ Line 5-6 JC,,
+# ==========================================,,
+Mat'l JC,wy51,bidirectional
+wy51,wy52,bidirectional
+wy52,wy53,bidirectional
+wy53,wy54,bidirectional
+wy54,wy55,bidirectional
+wy55,Line 5-6 JC,bidirectional
