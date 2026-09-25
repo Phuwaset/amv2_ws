@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- ============================================================
+       amv_offline_recording.launch
+       Offline mode: ใช้ปักพิกัดสถานี/waypoint + ทดสอบ route path_planner
+       - ไม่เปิด amv_base_connect (ไม่มีหุ่นจริง)
+       - NUC = master, MSI = RViz (ROS_MASTER_URI=http://<ip_NUC>:11311)
+       - Recorder สถานี/waypoint รันแยกผ่าน rosrun (เพื่อพิมพ์ชื่อใน terminal):
+           rosrun amv_service station_plotting_test.py \
+             _station_path:=/home/minirw/amv_ws/src/amv_service/station/station_list.csv \
+             _frame_id:=map
+           rosrun amv_service waypoint_recorder_test.py _frame_id:=map
+       ============================================================ -->
+
+  <param name="/use_sim_time" value="false" />
+
+  <!-- Map: ใช้แผนที่ mektec_20260917 (ตัวหลักที่ตกลงกัน) -->
+  <node name="map_server" pkg="map_server" type="map_server"
+        args="$(find amv_mapping)/map/mektec_20260917.yaml" />
+
+  <!-- Fake robot pose ที่ home (68,24) ตาม initial_pose ของ amcl
+       เพื่อให้ path_planner หา nearest_node ถูกต้อง -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_tf_static"
+        args="68 24 0 0 0 0 map base_footprint" />
+
+  <!-- Path planner: รับ /amv/command/goto_station -> publish /planned_path -->
+  <node pkg="amv_virtual_track" type="path_planner_node.py" name="path_planner_node" output="screen">
+    <param name="station_csv"  value="$(find amv_service)/station/station_list.csv" />
+    <param name="waypoint_csv" value="$(find amv_service)/station/waypoint_follower_list.csv" />
+    <param name="track_csv"    value="$(find amv_service)/station/manual_track.csv" />
+    <param name="frame_id"     value="map" />
+    <param name="base_frame"   value="base_footprint" />
+    <param name="step_size"    value="0.05" />
+  </node>
+
+</launch>

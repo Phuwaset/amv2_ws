@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="amv_connect" type="amv_pose_publish.py" name="amv_current_pose"/>
+    
+</launch>

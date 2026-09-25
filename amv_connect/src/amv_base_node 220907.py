@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+import rospy
+import time
+import tf
+import numpy as np
+from std_msgs.msg import Bool, String
+from geometry_msgs.msg import Twist, Quaternion
+from sensor_msgs.msg import Joy
+from nav_msgs.msg import Odometry
+from math import sin, cos
+from amv_base_connect import BaseConnect
+from amv_connect.msg import BaseStatusStamped, LedCommandStamped
+
+
+class amv_base_node(BaseConnect):
+    def __init__(self):
+        rospy.init_node("amv_node", anonymous=False)
+        self.publish_tf_odom = rospy.get_param('~publish_tf_odom', True)
+        #rospy.loginfo("Publish TF Odom from wheel encoder = %s", self.publish_tf_odom)
+        BaseConnect.__init__(self,port='/dev/amv_controller', baudrate='57600')
+        
+        self.cmd_linear_velocity = 0.0
+        self.cmd_angular_velocity = 0.0
+        self.amv_linear_velocity = 0.0
+        self.amv_angular_velocity = 0.0
+        self.previous_linear_velocity = 0.0
+        self.previous_angular_velocity = 0.0
+        self.charging_status = False
+        self.speed_up1 = False
+        self.speed_up2 = False
+        self.speed_up3 = False
+
+        self.current_time = rospy.Time.now()
+        self.last_time = rospy.Time.now()
+        self.latest_command = Twist()
+        self.x_odom = 0.0
+        self.y_odom = 0.0
+        self.theta = 0.0
+        self.turn_in_place_th = 0.12
+        self.min_turn_in_place_vel = 0.6
+        
+        self.linear_down = 0
+        self.linear_up = 0
+        self.amv_run = True
+        self.pin_lock = True
+        self.motor_lock = False
+        self.charger_on = True
+        self.led_command = b'\x02'
+        self.buzzer_command = b'\x00'
+
+        self.zone1 = False #stop zone
+        self.zone2 = False #warning zone reducing speed
+
+        rospy.Subscriber("joy", Joy, self.joy_callback) #subscribe data of joystrick	
+        rospy.Subscriber("set_velocity", Twist, self.vel_cmd_callback)  #subscribe velocity command from velocity command
+        rospy.Subscriber("pin_command", String, self.pin_cmd_callback) #subscribe data from pin command
+        rospy.Subscriber("led_command", LedCommandStamped, self.led_cmd_callback) #subscribe data from led command  
+        rospy.Subscriber("zone1", Bool, self.safety_zone1_callback)
+        rospy.Subscriber("zone2", Bool, self.safety_zone2_callback)  
+        self.base_status_pub = rospy.Publisher("amv_base_status", BaseStatusStamped, queue_size=1) #sublish base status
+        self.odom_pub = rospy.Publisher("odom_amv", Odometry, queue_size=1) #publish odom data
+        self.odom_tf_pub = tf.TransformBroadcaster()                    #publish odom tf        
+        
+
+
+        
+        rate = rospy.Rate(20)
+
+        self.start_receive_data()       # start to receive data from microcontroller   
+        time.sleep(2)                   #delay time befor send data (to protect port error)
+
+        while not rospy.is_shutdown():
+
+            if self.zone1 == True and self.cmd_linear_velocity > 0:
+                self.cmd_linear_velocity = 0
+                self.cmd_angular_velocity = 0
+                         
+            V = self.cmd_linear_velocity*1000
+            W = self.cmd_angular_velocity*1000                      
+            
+            self.set_amv_velocity(V, W, self.amv_run, self.pin_lock, self.motor_lock, self.charger_on, self.led_command, self.buzzer_command)
+            
+            rate.sleep()
+
+    def joy_callback(self, data):     
+        self.linear_down = int(data.buttons[1])
+        self.linear_up = int(data.buttons[3])
+        #print (data.buttons[1])
+        if self.linear_down == 1 and self.linear_up == 0:
+            self.pin_lock = False   #linear down
+            print('linear down')
+        if self.linear_down == 0 and self.linear_up == 1:
+            self.pin_lock = True    #linear up
+            print('linear up')
+        
+        if int(data.buttons[0]) == 1:
+            self.motor_lock = False
+        if int(data.buttons[2]) == 1:
+            self.motor_lock = True
+
+    def pin_cmd_callback(self, data):
+        pin_command = data.data
+        if pin_command == 'Up':
+            self.pin_lock = True    #linear up
+        if pin_command == 'Down':
+            self.pin_lock = False   #linear down
+    
+    def bytes_xor(self, var, key):
+        return bytes(a ^ b for a, b in zip(var, key))
+    
+    def led_cmd_callback(self, data):
+        color = data.led_command.color
+        flashing = data.led_command.flashing
+        buzzer = data.led_command.buzzer 
+
+        if color == 'none':
+            color_byte = b'\x00'
+        elif color == 'red':
+            color_byte = b'\x01'
+        elif color == 'green':
+            color_byte = b'\x02'
+        elif color == 'blue':
+            color_byte = b'\x03'
+        elif color == 'orange':
+            color_byte = b'\x04'
+        elif color == 'purple':
+            color_byte = b'\x05'
+        elif color == 'light_blue':
+            color_byte = b'\x06'
+        else:
+            color_byte = b'\x00'
+        
+        if flashing == 'none':
+            flashing_byte = b'\x00'
+        elif flashing == 'slow':
+            flashing_byte = b'\x10'
+        elif flashing == 'middle':
+            flashing_byte = b'\x20'
+        elif flashing == 'fast':
+            flashing_byte = b'\x30'
+        else:
+            flashing_byte = b'\x00'
+        
+        if buzzer == 'none':
+            buzzer_byte = b'\x00'
+        elif buzzer == 'sound1':
+            buzzer_byte = b'\x01'
+        elif buzzer == 'sound2':
+            buzzer_byte = b'\x02'
+        elif buzzer == 'sound3':
+            buzzer_byte = b'\x03'
+        elif buzzer == 'sound4':
+            buzzer_byte = b'\x04'
+        elif buzzer == 'sound5':
+            buzzer_byte = b'\x05'        
+        elif buzzer == 'sound6':
+            buzzer_byte = b'\x06'
+        elif buzzer == 'sound7':
+            buzzer_byte = b'\x07'
+        elif buzzer == 'sound8':
+            buzzer_byte = b'\x08'
+        elif buzzer == 'sound9':
+            buzzer_byte = b'\x09'
+        elif buzzer == 'sound10':
+            buzzer_byte = b'\x0a'        
+        elif buzzer == 'sound11':
+            buzzer_byte = b'\x0b'
+        elif buzzer == 'sound12':
+            buzzer_byte = b'\x0c'
+        elif buzzer == 'sound13':
+            buzzer_byte = b'\x0d'
+        elif buzzer == 'sound14':
+            buzzer_byte = b'\x0e'
+        elif buzzer == 'sound15':
+            buzzer_byte = b'\x0f'
+        else:
+            buzzer_byte = b'\x00'        
+        
+        self.led_command = self.bytes_xor(color_byte, flashing_byte)
+        self.buzzer_command = buzzer_byte
+    
+    def safety_zone1_callback(self, data):
+        self.zone1 = data.data
+    
+    def safety_zone2_callback(self, data):
+        self.zone2 = data.data       
+
+    def vel_cmd_callback(self, command):        
+        self.cmd_linear_velocity = command.linear.x
+        self.cmd_angular_velocity = command.angular.z
+
+    def status_callback(self, data):
+        self.current_time = rospy.Time.now()   
+        self.status_publish(data)   #publish base status
+        self.odom_publish(data)     #publish odom         
+        self.last_time = self.current_time
+
+    def status_publish(self, data):
+        amv_status = BaseStatusStamped()
+        amv_status.header.stamp = rospy.Time.now()
+        amv_status.header.frame_id = "base_footprint_amv"
+        amv_status.base_status = data
+        self.amv_linear_velocity = data.linear_velocity
+        self.amv_angular_velocity = data.angular_velocity
+        self.charging_status = data.charging
+
+        self.base_status_pub.publish(amv_status)
+
+    def odom_publish(self, data):
+        dt = (self.current_time - self.last_time).to_sec()
+        v_x = 0.0
+        v_theta = 0.0
+        
+        v_x = data.linear_velocity          #data from amv base
+        v_theta = data.angular_velocity
+
+        if v_x < 0.00001 and v_x > -0.00001:
+            v_x = 0        
+        if v_x > 0.5 and v_x < -0.5:
+            v_x = self.previous_linear_velocity
+        
+        if v_theta > 0.5 and v_theta < -0.5:
+            v_theta = self.previous_angular_velocity
+
+        self.x_odom += (v_x * cos(self.theta)) * dt
+        self.y_odom += (v_x * sin(self.theta)) * dt
+        self.theta += v_theta * dt 
+
+        odom_msg = Odometry()
+        odom_msg.header.frame_id = "odom_amv"
+        odom_msg.header.stamp = self.current_time
+        odom_msg.pose.pose.position.x = self.x_odom
+        odom_msg.pose.pose.position.y = self.y_odom
+
+        odom_msg.pose.pose.orientation = self.quaternion_from_RPY(0, 0, self.theta)
+        odom_msg.pose.covariance = [1e-3, 0, 0, 0, 0, 0, 0, 1e-3, 0, 0, 0, 0, 0, 0, 1e3, 0, 0, 0, 0, 0, 0, 1e3, 0, 0, 0, 0, 0, 0, 1e3, 0, 0, 0, 0, 0, 0, 1e-3]
+        odom_msg.child_frame_id = "base_footprint_amv"
+        odom_msg.twist.twist.linear.x = v_x
+        odom_msg.twist.twist.angular.z = v_theta
+        self.odom_pub.publish(odom_msg)
+
+        self.previous_linear_velocity = v_x
+        self.previous_angular_velocity = v_theta
+
+        if self.publish_tf_odom:
+            self.odom_tf_pub.sendTransform(
+                (self.x_odom, self.y_odom, 0),
+                tf.transformations.quaternion_from_euler(0, 0, self.theta),
+                rospy.Time.now(),
+                "base_footprint_amv",
+                "odom_amv"
+                ) 
+
+    def quaternion_from_RPY(self, roll, pitch, yaw):
+        tmp = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        return Quaternion(tmp[0], tmp[1], tmp[2], tmp[3])
+
+
+if __name__ == "__main__":
+    amv_base_node()
+

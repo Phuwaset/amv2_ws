@@ -1,0 +1,128 @@
+================================================================
+        AMV Work Log  —  2026-09-25 (วันศุกร์)
+================================================================
+หัวข้อหลัก: วิเคราะห์ปัญหา "สถานีทางผ่าน (connector)" Line 3-4 JC
+ที่บังคับให้หุ่นหมุนหัวตาม qz/qw คงที่ (ไม่เข้ากับการวิ่งหลาย loop /
+หลายทิศ) + ตรวจหน้าจริง (rosbridge/web) + ข้อเสนอ "สถานีทางผ่าน"
+
+----------------------------------------------------------------
+[1] สร้างไฟล์ launch ใหม่
+----------------------------------------------------------------
+- สร้าง: amv_virtual_track/launch/amv_offline_recording.launch
+  ประกอบด้วย map_server (mektec_20260917.yaml) + static TF
+  map->base_footprint @ (68, 24, 0) + path_planner_node
+- Recorders ไม่ใส่ใน launch (ต้อง rosrun เพื่อให้ input() รับชื่อได้)
+- catkin build ไม่จำเป็น (แพ็กเกจ Python ล้วน, devel_layout=linked)
+
+----------------------------------------------------------------
+[2] แก้ไขป้ายชื่อ (label) กลับหัว
+----------------------------------------------------------------
+สาเหตุ: rviz1 Noetic TEXT_VIEW_FACING ไม่ billboard จริง
+(text วางนอนในระนาบ map แบบ upright ตามโลก เสมอ) -> เห็นกลับหัว
+ในมุมมอง Top View Orthographic เสมอ
+แก้: ชดเชยด้วยการหมุน 180 องศา (z=1.0, w=0.0)
+- amv_service/src/station_plotting_test.py
+    build_rviz_markers(): เพิ่ม text_marker.pose.orientation.z = 1.0
+    และ orientation.w = 0.0 (หลัง position.z = 0.28)
+- amv_service/src/waypoint_recorder_test.py
+    waypoint_labels(): text.pose.orientation.z = 1.0 (เดิม w=1.0)
+สถานะ: py_compile ผ่าน; รอผู้ใช้รัน station_plotting_test ยืนยันผล
+
+----------------------------------------------------------------
+[3] ข้อเท็จจริงที่ตรวจยืนยันแล้ว (อ้างอิงโค้ด)
+----------------------------------------------------------------
+- station_labels เผยแพร่โดย station_plotting_test.py
+  (ไม่ได้อยู่ใน offline launch -> ต้อง rosrun เพิ่ม)
+- roslaunch amv_service station_plotting_test.py ใช้ไม่ได้
+  ต้องเป็น roslaunch amv_service station_plotting.launch
+  (ชื่อสถานี/waypoint ต้องใส่ผ่าน terminal เพราะ input())
+- Map origin [-30,-30,0] ใน mektec_20260917.yaml:
+  ถ้าเปลี่ยน origin ทั้ง frame map เลื่อน -> ต้องเลื่อนข้อมูลพิกัด
+  ทุกไฟล์ตาม (station_list.csv, waypoint_follower_list.csv,
+  amcl.launch initial_pose 68/24 (บรรทัด 11-12, 51-53), static TF)
+- manual_track.csv mode: bidirectional (ค่าปริยาย) = สร้าง edge
+  2 ทิศ, oneway = ทิศเดียว; force_twoway (path_planner_node.py)
+- Waypoint เป็นแค่จุดอ้างอิง x,y: qz/qw ของ waypoint ไม่มีผลต่อ
+  logic (controller ไม่โหลด waypoint CSV; planner ใช้หัวจาก
+  ทิศ segment; qz/qw ใช้เฉพาะสถานีเป้าหมายตัวสุดท้าย)
+
+----------------------------------------------------------------
+[4] ปัญหา "Line 3-4 JC"
+----------------------------------------------------------------
+- ตำแหน่งปัจจุบันใน station_list.csv บรรทัด 11:
+  Line 3-4 JC,Auto,1,Up,6.6,1.16,0,0,0,0.7,-0.7,0
+- เป็นจุดเชื่อมต่อทางผ่าน (ไม่มีอ่าวจอด/หน้าอ่าว) -> ตั้งหัวคงที่
+  qz/qw ไม่ได้ (วิ่งผ่านได้หลายทิศ/หลาย loop)
+- ผู้บังคับหัวจริงในโปรดักชัน =
+  station_service.py go_station_service():120-135
+  (MoveBaseGoal ใช้ x,y,qz,qw จาก station_list.csv)
+  *ไม่ใช่* waypoint_controller (ไม่ถูก launch ในโปรดักชัน)
+- path_planner_node.py:221-234 คำนวณหัวจากทิศ segment ได้ถูกต้อง
+  สำหรับทุก loop (240-243 ถูก override เป็น qz/qw ของเป้าหมาย)
+
+----------------------------------------------------------------
+[5] หน้างานจริง: rosbridge / Web HMI
+----------------------------------------------------------------
+- เว็บเป็น React app ที่ /home/minirw/build
+- สายสื่อสารผ่าน rosbridge_server พอร์ต 9090 (amv2-office)
+  amv_connect/launch/rosbridge_websocket.launch
+- Web PUB: /initialpose
+  Web SUB: /amcl_pose, /amv_navigation_status
+  Web Service call: /go_station, /read_station, /aboutus
+- เมนูปุ่มสถานีในเว็บ = station_list.csv ผ่าน /read_station
+  (ReadStation.srv คืน StationData[])
+- คำสั่งจริงที่กด = /go_station (GoStation.srv, string target_station)
+  -> station_service -> move_base goal (พิกัด + หัว qz/qw)
+- สัญญาข้อตกลง (srv/msg): amv_service/srv/*.srv +
+  amv_service/msg/StationData.msg (12 fields ตรงกับ CSV เป๊ะ)
+  station_service.py อ่าน CSV แบบ index row[0..11]
+
+----------------------------------------------------------------
+[6] ไอเดียระหว่างทาง (สถานะ)
+----------------------------------------------------------------
+- แผน no_turn (คอลัมน์ condition + ข้ามหมุน STATION_ALIGN):
+  ถูกพับเก็บไว้ก่อน (complex, กังวลผลกระทบข้างเคียง)
+- ไอเดีย "ย้าย Line 3-4 JC เป็น waypoint": ขัดกับสัญญา web
+  (/read_station + /go_station มองเห็นเฉพาะสถานี) -> ต้องขยาย
+  srv/msg/web จึงใหญ่เกินไป -> ไม่เอา
+- ข้อเสนอปัจจุบัน = "สถานีทางผ่าน (passthrough)":
+  ยังเป็นสถานี (web เห็น + สั่งได้) + flag -> /go_station
+  คำนวณ goal orientation จาก bearing รถ->สถานี (แทน qz/qw)
+  ขอบเขต 4 ไฟล์:
+    1) station_list.csv      เพิ่มคอลัมน์ condition (col 13 หลัง theta)
+                             Line 3-4 JC = passthrough
+    2) station_service.py    load row[12] + go_station_service
+                             ใช้ bearing (pose จาก amv_pose_tf,307-308)
+    3) (เผื่อ paradigm ใหม่)  path_planner_node.py:240-243 +
+                             waypoint_controller STATION_ALIGN
+    4) station_plotting_test.py CSV_HEADER(:20) + load + append
+                             (กัน save ทับแล้ว flag หาย)
+  *รอการตัดสินใจ 3 ข้อจากผู้ใช้*
+    1) flag แบบคอลัมน์ condition ท้าย CSV (ไม่ทะลุ web) OK?
+    2) ทำเฉพาะโปรดักชัน (/go_station+move_base) หรือรวม offline
+    3) ยอมรับ bearing ณ เวลากดปุ่มไหม (จุดผ่าน corridor ใกล้เคียง
+       ทิศวิ่งเข้าจริง)
+
+----------------------------------------------------------------
+[7] rostopic pub ชื่อสถานีที่มีเครื่องหมาย '
+----------------------------------------------------------------
+- สถานีจริง: Mat'l JC (station_list.csv บรรทัด 13),
+  Mat'l AI (บรรทัด 2), ทั้งคู่มี apostrophe
+- YAML ห้าม single-quote ใน single-quote -> ใช้ '' แทน:
+  rostopic pub -1 /amv/command/goto_station std_msgs/String "data: 'Mat''l JC'"
+
+----------------------------------------------------------------
+[8] ไฟล์ที่แก้/สร้างวันนี้ (สรุป)
+----------------------------------------------------------------
+สร้าง:
+  - amv_virtual_track/launch/amv_offline_recording.launch
+แก้ (หัวข้อ [2] สถานะป้ายกลับหัว):
+  - amv_service/src/station_plotting_test.py  (orientation 180 องศา)
+  - amv_service/src/waypoint_recorder_test.py (orientation 180 องศา)
+สร้าง (ไฟล์นี้):
+  - amv_connect/debug_connect/log/20260925_log
+
+ยังไม่แตะ (รอการตัดสินใจ):
+  - station_list.csv / station_service.py / path_planner_node.py
+    / waypoint_controller_node.py / manual_track.csv / srv / msg / web
+================================================================

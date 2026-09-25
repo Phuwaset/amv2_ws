@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="urdf_file" default="xacro --inorder '$(find amv_connect)/urdf/amv.urdf'" />
+  <param name="robot_description" command="$(arg urdf_file)" />
+    <!-- important generally, but specifically utilised by the current app manager -->
+  <param name="robot/name" value="amv"/>
+  <param name="robot/type" value="diff-drive"/>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="amv_model">
+    <param name="publish_frequency" type="double" value="20.0" />
+  </node>
+    
+</launch>

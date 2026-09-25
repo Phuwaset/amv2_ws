@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch> 
+  <!-- Rewired: delegate navigation to amv_virtual_track navigation_virtual_track.launch -->
+  <include file="$(find amv_virtual_track)/launch/navigation_virtual_track.launch" />
+</launch>

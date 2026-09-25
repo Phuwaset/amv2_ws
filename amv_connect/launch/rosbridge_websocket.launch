@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="rosbridge_server" pkg="rosbridge_server" type="rosbridge_websocket" respawn="true" output="screen">
+        <param name="address" type="string" value="amv2-office"/>
+        <param name="port" type="int" value="9090"/>
+    </node>
+
+</launch>

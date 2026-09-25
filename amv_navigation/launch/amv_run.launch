@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="amv_navigation" type="run_launch.py" name="run_amv_launch" output="screen"/>
+
+</launch>

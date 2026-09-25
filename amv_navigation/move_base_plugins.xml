@@ -1,0 +1,5 @@
+<library path="lib/libamv_navigation">
+  <class name="amv_navigation/PlannedPathPlanner" type="amv_navigation::PlannedPathPlanner" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>Global planner that follows /planned_path from amv_virtual_track path planner (fallback NavfnROS)</description>
+  </class>
+</library>

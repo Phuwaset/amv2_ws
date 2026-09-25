@@ -1,0 +1,4 @@
+string send_station
+string receive_station
+---
+string status

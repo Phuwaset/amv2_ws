@@ -1,0 +1,5 @@
+string qr_detection_id
+float32 qr_position_x
+float32 qr_position_y
+float32 qr_distance
+string qr_set_position

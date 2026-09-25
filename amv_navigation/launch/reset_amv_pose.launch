@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <node pkg="amv_navigation" type="reset_position.py" name="reset_amv_pose" output="screen"/>
+
+</launch>

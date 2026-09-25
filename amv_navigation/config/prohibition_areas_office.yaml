@@ -1,0 +1,6 @@
+# พื้นที่ห้าม (Prohibition) สำหรับแผนที่ OFFICE (v3) - ยังไม่มี zone เพิ่ม
+# แผนที่ v3 มีกำแพงจริงอยู่ใน static map แล้ว (จาก gmapping)
+# ถ้าต้องการเพิ่มพื้นที่ห้าม ใส่เป็นเส้น segment แบบนี้:
+# prohibition_areas:
+#  - [[x1, y1], [x2, y2]]
+prohibition_areas: []

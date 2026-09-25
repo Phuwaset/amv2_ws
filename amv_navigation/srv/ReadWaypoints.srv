@@ -1,0 +1,3 @@
+---
+int32 status_code
+WaypointsData[] waypoints_data

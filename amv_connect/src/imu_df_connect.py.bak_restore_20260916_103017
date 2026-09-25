@@ -1,0 +1,213 @@
+#!/usr/bin/python3
+import rospy
+from threading import Thread
+from serial import Serial
+import time
+from math import pi
+from ctypes import c_short
+import numpy as np
+import tf
+from sensor_msgs.msg import Imu
+from geometry_msgs.msg import Quaternion
+
+FREQUENCY_5HZ  = b'\x05'
+FREQUENCY_10HZ = b'\x06'
+FREQUENCY_20HZ = b'\x07'
+FREQUENCY_50HZ = b'\x08'
+FREQUENCY_100HZ = b'\x09'
+FREQUENCY_125HZ = b'\x0A'
+FREQUENCY_200HZ = b'\x0B'
+
+buffer_len = 11
+HEADERACC = b'\x51'      #Acceleration packet header 
+HEADERGYRO = b'\x52'     #Angular velocity packet header 
+HEADERANGLE = b'\x53'    #Angle packet header 
+HEADER55 = b'\x55'
+
+XL = 2
+XH = 3
+YL = 4
+YH = 5
+ZL = 6
+ZH = 7
+
+class IMUConnect:
+
+    data_acc = b'\x00'
+    data_gyro = b'\x00' 
+    data_angle = b'\x00' 
+
+    def __init__(self, port='/dev/imu_df', baudrate='9600',bytesize=8,parity='N',stopbits=1, timeout=10):
+        self.connection = Serial(port=port, baudrate=baudrate, bytesize=bytesize, parity=parity,stopbits=stopbits, timeout=timeout)
+        self.flush()
+
+        rospy.init_node("imu_df_node", anonymous=False)
+
+        self.current_time = rospy.Time.now()
+        self.last_time = rospy.Time.now()
+
+        self.init_imu_angle = True
+        self.last_imu_angle = 0.0
+             
+        self.imu_pub = rospy.Publisher("imu/data", Imu, queue_size=1)
+
+        rate = rospy.Rate(30)
+
+        #time.sleep(0.5)
+        #serial.send(b'\xff\xaa\x03' + FREQUENCY_50HZ + b'\x00') 
+        #time.sleep(0.1)
+
+        self.start_receive_data()       # start to receive data from sensor
+
+        while not rospy.is_shutdown():                       
+
+            rate.sleep()
+
+    def flush(self):
+        self.connection.flushInput()
+        self.connection.flushOutput()
+
+    def open(self):
+        if not self.connection.isOpen():    
+            self.connection.open()
+   
+    def close(self):
+        self.flush()
+        self.connection.close()
+
+    def get_acc(self, data_low, data_high):
+        low_byte = data_low
+        high_byte = data_high        
+        result = high_byte << 8 | low_byte
+        result = c_short(result).value / 32768.000 * 16.000 * 9.806
+        return result
+
+    def get_gyro(self, data_low, data_high):
+        low_byte = data_low
+        high_byte = data_high        
+        result = high_byte << 8 | low_byte
+        result = c_short(result).value / 32768.000 * 2000.000
+        return result  
+
+    def get_angle(self, data_low, data_high):
+        low_byte = data_low
+        high_byte = data_high        
+        result = high_byte << 8 | low_byte
+        result = c_short(result).value / 32768.000 * pi
+        return result  
+
+    def start_receive_data(self):
+        reading_thread = Thread(target=self.reading_thread)
+        reading_thread.daemon = True
+        reading_thread.start()
+
+    def read_data_buffer(self, header): 
+        #self.open()              
+        if self.connection.readable:
+            data_header = self.connection.read(1)
+            #print ('--------------------------------------------')
+            #print ('stx :', data_header)
+            if data_header != b'' and data_header == HEADER55:
+                data_type = self.connection.read(1)
+                if data_type != b'' and data_type == header:
+                    buffer = data_header + data_type + self.connection.read(buffer_len-2) #11-data_header(1)-data_type(1) = 9
+                    #print (buffer)
+                    return buffer      
+
+    def reading_thread(self):
+        self.open()
+        print ('Start thread of receiving data')
+
+        while True:              
+            #self.data_acc = self.read_data_buffer(HEADERACC)
+            #self.data_gyro = self.read_data_buffer(HEADERGYRO)
+            self.data_angle = self.read_data_buffer(HEADERANGLE)
+            #print ('data buffer : ', self.data_acc)
+            if self.data_angle != None:                
+                try: 
+                    if len(self.data_angle) == buffer_len:
+                        #if self.data_angle[0] == 85 and self.data_angle[1] == 83:
+                            
+                            #AccX = self.get_acc(self.data_acc[2],self.data_acc[3])
+                            #AccY = self.get_acc(self.data_acc[4],self.data_acc[5])
+                            #AccZ = self.get_acc(self.data_acc[6],self.data_acc[7])
+
+                            #GyroX = self.get_gyro(self.data_gyro[XL],self.data_gyro[XH])
+                            #GyroY = self.get_gyro(self.data_gyro[YL],self.data_gyro[YH])
+                            #GyroZ = self.get_gyro(self.data_gyro[ZL],self.data_gyro[ZH])
+
+                            AngleX = self.get_angle(self.data_angle[XL],self.data_angle[XH])
+                            AngleY = self.get_angle(self.data_angle[YL],self.data_angle[YH])
+                            AngleZ = self.get_angle(self.data_angle[ZL],self.data_angle[ZH])   
+
+                            print (AngleZ)                                                                                                                                
+                            
+                            self.status_callback(AngleZ)                   
+                except:
+                    print ('Data reading wrong format')
+
+
+    def status_callback(self, data):
+        self.current_time = rospy.Time.now()
+        self.imu_publish(data)                      #publish imu        
+        self.last_time = self.current_time
+
+    def imu_publish(self, data):
+        dt = (self.current_time - self.last_time).to_sec()
+        # Calculate Relative Yaw
+        if self.init_imu_angle:
+            self.last_imu_angle = data
+            self.init_imu_angle = False
+            return
+
+        # ------ IMU Data Processing ------
+        current_imu_angle = data
+
+        print (current_imu_angle)
+        dyaw = 0.0
+        # Reading relative angle
+        if self.last_imu_angle < 1.5708 and  4.7124 < current_imu_angle <= 2*pi:
+            dyaw = -( self.last_imu_angle + (2*pi - current_imu_angle))
+        elif self.last_imu_angle > 4.7124 and 0 <= current_imu_angle <= 1.5708:
+            dyaw = 2*pi - self.last_imu_angle + current_imu_angle
+        else:
+            dyaw = current_imu_angle - self.last_imu_angle
+        
+        # inverse direction to match imu_link 
+        dyaw = dyaw 
+        # convert range of current_imu_angle to ros protocol [-PI,PI]
+        output_angle = (current_imu_angle - pi)
+        self.last_imu_angle = current_imu_angle
+        # rospy.loginfo("dyaw = %s", dyaw)
+        
+        imu_msg = Imu()
+        imu_msg.header.stamp = rospy.Time.now()
+        imu_msg.header.frame_id = 'imu_link'
+        # imu_msg.header.frame_id = 'base_link'
+        # tmp_imu = tf.transformations.quaternion_from_euler(0, 0, dyaw)
+        imu_msg.orientation = self.quaternion_from_RPY(0, 0, output_angle)
+        imu_msg.angular_velocity.x = 0
+        imu_msg.angular_velocity.y = 0
+        imu_msg.angular_velocity.z = dyaw/dt
+        imu_noises = pow(0.00017, 2)  # = 0.01 degrees / sec
+        imu_msg.orientation_covariance = [1e3, 0, 0, 0, 1e3, 0, 0, 0, imu_noises]
+        self.imu_pub.publish(imu_msg)
+        return imu_msg
+
+    def quaternion_from_RPY(self, roll, pitch, yaw):
+        tmp = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        return Quaternion(tmp[0], tmp[1], tmp[2], tmp[3])    
+   
+    def send(self, command):
+        self.open()
+        if self.connection.writable:
+            self.connection.write(command)
+
+if __name__ == "__main__":
+    serial = IMUConnect()
+
+
+
+
+
+
